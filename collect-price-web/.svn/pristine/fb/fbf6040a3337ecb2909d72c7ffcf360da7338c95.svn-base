@@ -1,0 +1,60 @@
+package com.chngc.wechat.web.vo;
+
+/**
+ * Created by jiahuijie on 15/10/8.
+ */
+public class LoginSign implements java.io.Serializable{
+
+    /**
+     * 微信openId
+     */
+    private String openId;
+
+    /**
+     * 会员id
+     */
+    private String memberId;
+
+    /**
+     * tokenId
+     */
+    private String tokenId;
+
+    /**
+     * 头像
+     */
+    private String faceImg;
+
+
+    public String getOpenId() {
+        return openId;
+    }
+
+    public void setOpenId(String openId) {
+        this.openId = openId;
+    }
+
+    public String getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
+    }
+
+    public String getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(String tokenId) {
+        this.tokenId = tokenId;
+    }
+
+    public String getFaceImg() {
+        return faceImg;
+    }
+
+    public void setFaceImg(String faceImg) {
+        this.faceImg = faceImg;
+    }
+}

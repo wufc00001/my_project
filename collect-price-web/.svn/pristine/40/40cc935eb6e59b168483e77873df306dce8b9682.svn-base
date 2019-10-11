@@ -1,0 +1,150 @@
+package com.chngc.collect.service;
+
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.dao.CoreRoleComponentMapper;
+import com.chngc.collect.dao.CoreRoleMapper;
+import com.chngc.collect.dao.CoreUserMapper;
+import com.chngc.collect.entity.CoreRoleComponent;
+import com.chngc.collect.entity.CoreUser;
+import com.chngc.collect.util.ConverterUtils;
+import com.chngc.collect.util.CookieUtils;
+import com.chngc.collect.vo.CoreUserVo;
+import com.chngc.collect.vo.Permission;
+import com.chngc.core.util.EncryptUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
+
+/**
+ * Created by wufc on 2019/8/23.
+ */
+@Slf4j
+@Service
+public class CoreUserService {
+    @Autowired
+    private CoreUserMapper coreUserMapper;
+    @Autowired
+    private CoreRoleComponentMapper coreRoleComponentMapper;
+    @Autowired
+    private CoreRoleMapper coreRoleMapper;
+
+    @Autowired
+    private CookieUtils cookieUtils;
+
+    // 登录
+    public Permission login(String loginName, String password) {
+        Permission permission = new Permission();
+        // 根据用户登录名 查询用户信息
+        CoreUser coreUser = coreUserMapper.getCoreUserByLoginName(loginName);
+        // 用户不存在
+        if(coreUser == null){
+            permission.setLoginState(Constants.USERNOTEXIST);
+            return permission;
+        }
+        // 用户未激活或处于停用状态
+        if(!"ACT".equals(coreUser.getUserStatus())){
+            permission.setLoginState(Constants.USERINACTIVE);
+            return permission;
+        }
+        // 密码不正确
+        String md5Pwd =  EncryptUtil.getMD5(password);
+        if(coreUser.getPassword()!=null&&!coreUser.getPassword().equals(md5Pwd)){
+            permission.setLoginState(Constants.PWDERR);
+            return permission;
+        }
+        // 验证通过  登录成功
+        permission.setLoginState(Constants.LOGINOK);
+        permission.setLoginName(coreUser.getLoginName());
+        permission.setRealName(coreUser.getRealName());
+        permission.setUserId(coreUser.getUserId());
+        // 用户 菜单权限
+        permission.setComponents(getPermissionComponent(coreUser.getRoleIds()));
+
+        return permission;
+    }
+
+    private Map<String,Boolean> getPermissionComponent(String roleIds) {
+        Map<String,Boolean> componentMap = new HashMap<>();
+        if(roleIds == null || roleIds == ""){
+            return componentMap;
+        }
+        String[] roleIdArr = roleIds.split(",");
+        List<CoreRoleComponent> compList = coreRoleComponentMapper.getPermissionComponentCode(roleIdArr);
+        if(compList != null && compList.size() > 0){
+            for (CoreRoleComponent roleComponent:compList) {
+                componentMap.put(roleComponent.getComponentCode(),true);
+            }
+        }
+        return componentMap;
+    }
+
+    /**
+     * 获取在线会员id
+     *
+     * @param request
+     * @param response
+     * @return
+     */
+    public Boolean getOnlineUserId(HttpServletRequest request, HttpServletResponse response) {
+        String userId = null;
+        try {
+            String token = getToken(request, response);
+           String sessionToken = (String) request.getSession().getAttribute(Constants.TOKEN);
+            if (!token.equals(sessionToken)) {
+               return false;
+            }
+        } catch (Exception e) {
+            log.error("获取登录用户异常", e);
+        }
+        return true;
+    }
+
+    private String getToken(HttpServletRequest request, HttpServletResponse response) {
+        String token = cookieUtils.getCookie(request, Constants.TOKEN);
+        if (StringUtils.isBlank(token)) {
+            token = getUUID();
+            cookieUtils.setCookie(response, Constants.TOKEN, token, false);
+        }
+        return token;
+    }
+    public String getUUID() {
+        return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    public CoreUser getCoreUserByUserId(String userId) {
+         return coreUserMapper.getCoreUserByUserId(userId);
+    }
+
+    public void saveUpdate(CoreUser coreUser) {
+         coreUserMapper.saveUpdate(coreUser);
+    }
+
+    public void save(CoreUser coreUser) {
+        coreUserMapper.save(coreUser);
+    }
+
+    public CoreUser getCoreUserByLoginName(String loginName) {
+        return coreUserMapper.getCoreUserByLoginName(loginName);
+    }
+
+    public List<CoreUserVo> list() {
+        List<CoreUserVo> userVoList = new ArrayList<>();
+        List<CoreUser> userList = coreUserMapper.getAllCoreUser();
+        if(userList != null && userList.size() > 0){
+            CoreUserVo userVo = new CoreUserVo();
+            for (CoreUser user:userList) {
+                String roleIds =  user.getRoleIds()==null?"":user.getRoleIds();
+                String roleNames = coreRoleMapper.getRoleNames(roleIds.split(","));
+                userVo.setRoleNames(roleNames);
+                ConverterUtils.converterUserVo(user,userVo);
+                userVoList.add(userVo);
+            }
+        }
+        return userVoList;
+    }
+}

@@ -1,0 +1,163 @@
+package com.chngc.collect.entity;
+
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class BusiGoodsPrice implements Serializable {
+
+  private Long id;
+  private Long goodsId;
+  private Long goodsPacking;
+  private Long certificationAuthority;
+  private Long ratingAgencies;
+  private String ratingFraction;
+  private Long priceType;
+  private Double goodsPrice;
+  private Long priceSource;
+  private Long quantity;
+  private String remarks;
+  private Date businessTime;
+  private Date createTime;
+  private String createUser;
+  private String createUserName;
+  private Date editTime;
+  private String editUser;
+
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Long getGoodsId() {
+    return goodsId;
+  }
+
+  public void setGoodsId(Long goodsId) {
+    this.goodsId = goodsId;
+  }
+
+  public Long getGoodsPacking() {
+    return goodsPacking;
+  }
+
+  public void setGoodsPacking(Long goodsPacking) {
+    this.goodsPacking = goodsPacking;
+  }
+
+  public Long getCertificationAuthority() {
+    return certificationAuthority;
+  }
+
+  public void setCertificationAuthority(Long certificationAuthority) {
+    this.certificationAuthority = certificationAuthority;
+  }
+
+  public Long getRatingAgencies() {
+    return ratingAgencies;
+  }
+
+  public void setRatingAgencies(Long ratingAgencies) {
+    this.ratingAgencies = ratingAgencies;
+  }
+
+  public String getRatingFraction() {
+    return ratingFraction;
+  }
+
+  public void setRatingFraction(String ratingFraction) {
+    this.ratingFraction = ratingFraction;
+  }
+
+  public Long getPriceType() {
+    return priceType;
+  }
+
+  public void setPriceType(Long priceType) {
+    this.priceType = priceType;
+  }
+
+  public Double getGoodsPrice() {
+    return goodsPrice;
+  }
+
+  public void setGoodsPrice(Double goodsPrice) {
+    this.goodsPrice = goodsPrice;
+  }
+
+  public Long getPriceSource() {
+    return priceSource;
+  }
+
+  public void setPriceSource(Long priceSource) {
+    this.priceSource = priceSource;
+  }
+
+  public Long getQuantity() {
+    return quantity;
+  }
+
+  public void setQuantity(Long quantity) {
+    this.quantity = quantity;
+  }
+
+  public String getRemarks() {
+    return remarks;
+  }
+
+  public void setRemarks(String remarks) {
+    this.remarks = remarks;
+  }
+
+  public Date getBusinessTime() {
+    return businessTime;
+  }
+
+  public void setBusinessTime(Date businessTime) {
+    this.businessTime = businessTime;
+  }
+
+  public Date getCreateTime() {
+    return createTime;
+  }
+
+  public void setCreateTime(Date createTime) {
+    this.createTime = createTime;
+  }
+
+  public String getCreateUser() {
+    return createUser;
+  }
+
+  public String getCreateUserName() {
+    return createUserName;
+  }
+
+  public void setCreateUserName(String createUserName) {
+    this.createUserName = createUserName;
+  }
+
+  public void setCreateUser(String createUser) {
+    this.createUser = createUser;
+  }
+
+  public Date getEditTime() {
+    return editTime;
+  }
+
+  public void setEditTime(Date editTime) {
+    this.editTime = editTime;
+  }
+
+  public String getEditUser() {
+    return editUser;
+  }
+
+  public void setEditUser(String editUser) {
+    this.editUser = editUser;
+  }
+}

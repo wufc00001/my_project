@@ -1,0 +1,65 @@
+package com.chngc.collect.util;
+
+import com.chngc.collect.entity.CoreUser;
+import com.chngc.collect.form.BusiProjectForm;
+import com.chngc.collect.service.CoreUserService;
+import com.chngc.core.util.EncryptUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class CheckUtils {
+
+    public static void checkUserFiledError(CoreUser coreUser, Map<String, String> map){
+        if(StringUtils.isBlank(coreUser.getLoginName())){
+            map.put("01","账号不能为空");
+        }
+        if(StringUtils.isBlank(coreUser.getRealName())){
+            map.put("01","姓名不能为空");
+        }
+        if(StringUtils.isBlank(coreUser.getMobile())){
+            map.put("01","手机号不能为空");
+        }
+        if(StringUtils.isBlank(coreUser.getRoleIds())){
+            map.put("01","请选择角色");
+        }
+    }
+
+    public static void checkProjectFiledError(BusiProjectForm form, Map<String, String> map) {
+        if(StringUtils.isBlank(form.getProjectName())){
+            map.put("01","项目名不能为空");
+        }
+        if(StringUtils.isBlank(form.getAbbreviationName())){
+            map.put("01","项目简称不能为空");
+        }
+        if(StringUtils.isBlank(form.getIssuanceDay())){
+            map.put("01","发行日不能为空");
+        }
+    }
+    /**
+     * 校验密码
+     * @param oldPassword
+     * @param newPassword
+     * @param coreUser
+     * @return
+     */
+    public static Map<String,String> checkPassword(String oldPassword, String newPassword, CoreUser coreUser) {
+        Map<String, String> map = new HashMap<>();
+        if(StringUtils.isBlank(oldPassword)){
+            map.put("01","旧密码不能为空");
+        }
+        if(StringUtils.isBlank(newPassword)){
+            map.put("02","新密码不能为空");
+        }
+        oldPassword =  EncryptUtil.getMD5(oldPassword);
+        if(!oldPassword.equals(coreUser.getPassword())){
+            map.put("03","密码错误");
+        }
+        return map;
+    }
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.CoreRoleComponentMapper" >
+    <resultMap id="BaseResultMap" type="com.chngc.collect.entity.CoreRoleComponent" >
+        <result column="role_component_id" property="roleComponentId" jdbcType="VARCHAR" />
+        <result column="component_id" property="roleId" jdbcType="VARCHAR" />
+        <result column="role_id" property="componentId" jdbcType="VARCHAR" />
+        <result column="component_code" property="componentCode" jdbcType="VARCHAR" />
+    </resultMap>
+    <select id="getPermissionComponentCode" resultType="java.util.Map">
+        select cc.component_code code,cc.component_name cname from core_role_component crc ,core_component cc where cc.component_id = crc.component_id and role_id in
+        <foreach collection="array" item="roleId" index="index" open="(" close=")" separator=",">
+            #{roleId}
+        </foreach>
+        order by crc.component_code
+    </select>
+</mapper>

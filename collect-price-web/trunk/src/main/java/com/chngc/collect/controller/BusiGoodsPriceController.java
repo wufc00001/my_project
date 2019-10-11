@@ -1,0 +1,277 @@
+package com.chngc.collect.controller;
+
+import com.chngc.collect.common.BaseController;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.entity.BusiDictionariesProject;
+import com.chngc.collect.entity.BusiGoodsPrice;
+import com.chngc.collect.service.BusiGoodsPriceService;
+import com.chngc.collect.util.Dictionaries;
+import com.chngc.core.common.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+@Slf4j
+@RequestMapping("manager/busi_goods_price")
+@RestController
+public class BusiGoodsPriceController extends BaseController {
+    @Autowired
+    private BusiGoodsPriceService busiGoodsPriceService;
+
+    @PostMapping(value = "/list")
+    public Mono<ResponseResult> list(HttpServletRequest request, HttpServletResponse response) {
+        int pageNo = Integer.parseInt(request.getParameter("pageNo"));
+        int pageSize = Integer.parseInt(request.getParameter("pageSize"));
+        //纪念币名称
+        String projectName = request.getParameter("projectName");
+        //品种名称
+        String goodsName = request.getParameter("goodsName");
+        //发型年份
+        String issueYear = request.getParameter("issueYear");
+        //币面年份
+        String goodsYear = request.getParameter("goodsYear");
+        //包装版本
+        String goodsPacking = request.getParameter("goodsPacking");
+        //价格来源
+        String priceSource = request.getParameter("priceSource");
+        //价格类型
+        String priceType = request.getParameter("priceType");
+        List<Long> projectNameList = new ArrayList<>();
+        if (StringUtils.isNotBlank(projectName)) {
+            for (BusiDictionariesProject busiDictionariesProject : Dictionaries.dictionaries_project) {
+                if (busiDictionariesProject.getProjectName().indexOf(projectName.trim()) >= 0) {
+                    projectNameList.add(busiDictionariesProject.getId());
+                }
+            }
+            if(projectNameList.size()==0){
+                projectNameList.add(0l);
+            }
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("pageNo", pageNo);
+        map.put("pageSize", pageSize);
+        map.put("limit", (pageNo - 1) * pageSize);
+        map.put("projectNameList", projectNameList);
+        if(StringUtils.isNotBlank(goodsName)){
+            map.put("goodsName",goodsName.trim());
+        }
+        map.put("issueYear", issueYear);
+        map.put("goodsYear", goodsYear);
+        map.put("goodsPacking", goodsPacking);
+        map.put("priceSource", priceSource);
+        map.put("priceType", priceType);
+        List<Map> dataMap = busiGoodsPriceService.list(map);
+        int listCount = busiGoodsPriceService.listCount(map);
+        Map<String, Object> returnMap = new HashMap<>();
+        returnMap.put("dictionariesYear", Dictionaries.dictionaries_year);
+        returnMap.put("dictionariesPriceSource", Dictionaries.dictionaries_price_source);
+        returnMap.put("dictionariesPriceType", Dictionaries.dictionaries_price_type);
+        returnMap.put("dictionariesPacking", Dictionaries.dictionaries_packing);
+        returnMap.put("list", dataMap);
+        returnMap.put("listCount", listCount);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+    }
+
+    @PostMapping(value = "/listByGoodsId")
+    public Mono<ResponseResult> listByGoodsId(HttpServletRequest request, HttpServletResponse response) {
+        int pageNo = Integer.parseInt(request.getParameter("pageNo"));
+        int pageSize = Integer.parseInt(request.getParameter("pageSize"));
+        String goodsId = (request.getParameter("goodsId"));
+        Map<String, Object> map = new HashMap<>();
+        map.put("pageNo", pageNo);
+        map.put("pageSize", pageSize);
+        map.put("limit", (pageNo - 1) * pageSize);
+        map.put("goodsId", goodsId);
+        List<Map> list = busiGoodsPriceService.list(map);
+        int listCount = busiGoodsPriceService.listCount(map);
+        Map<String, Object> returnMap = new HashMap<>();
+        returnMap.put("list", list);
+        returnMap.put("listCount", listCount);
+        returnMap.put("pageNo", pageNo);
+        returnMap.put("pageSize", pageSize);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+    }
+
+    @PostMapping(value = "/add")
+    public Mono<ResponseResult> add(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> returnMap = new HashMap<>();
+        returnMap.put("dictionariesPacking", Dictionaries.dictionaries_packing);
+        returnMap.put("dictionariesCertificationAuthority", Dictionaries.dictionaries_certification_authority);
+        returnMap.put("dictionariesRatingAgencies", Dictionaries.dictionaries_rating_agencies);
+        returnMap.put("dictionariesPriceType", Dictionaries.dictionaries_price_type);
+        returnMap.put("dictionariesPriceSource", Dictionaries.dictionaries_price_source);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+    }
+
+    @PostMapping(value = "/save")
+    public Mono<ResponseResult> save(HttpServletRequest request, HttpServletResponse response) throws ParseException {
+        Map<String, Object> returnMap = new HashMap<>();
+        //包装
+        String packing = request.getParameter("packing");
+        //封装认证机构
+        String certificationAuthority = request.getParameter("certificationAuthority");
+        //封装评级机构
+        String ratingAgencies = request.getParameter("ratingAgencies");
+        //价格类型
+        String priceType = request.getParameter("priceType");
+        //价格来源
+        String priceSource = request.getParameter("priceSource");
+        //成交时间
+        String businessTime = request.getParameter("businessTime");
+        //评级分数
+        String ratingFraction = request.getParameter("ratingFraction");
+        //成交数量
+        String quantity = request.getParameter("quantity");
+        //备注
+        String remarks = request.getParameter("remarks");
+        //商品id
+        String goodsId = request.getParameter("goodsId");
+        String goodsPrice = request.getParameter("price");
+        String userId = (String) request.getSession().getAttribute("userId");
+        String realName = (String) request.getSession().getAttribute("realName");
+
+        if(StringUtils.isNotBlank(quantity)&&quantity.length()>15){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "成交量长度不能超过15个字符"));
+        }
+        if(StringUtils.isNotBlank(goodsPrice)&&goodsPrice.length()>15){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "价格长度不能超过15个字符"));
+        }
+        if(StringUtils.isNotBlank(remarks)&&remarks.length()>255){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "备注长度不能超过255个字符"));
+        }
+        BusiGoodsPrice busiGoodsPrice = new BusiGoodsPrice();
+        if (StringUtils.isNotBlank(businessTime)) {
+            SimpleDateFormat sDateFormat=new SimpleDateFormat("yyyy-MM-dd");
+            busiGoodsPrice.setBusinessTime(sDateFormat.parse(businessTime));
+        }
+        busiGoodsPrice.setRatingFraction(ratingFraction);
+        if (StringUtils.isNotBlank(quantity)) {
+            busiGoodsPrice.setQuantity(Long.parseLong(quantity));
+        }
+        busiGoodsPrice.setRemarks(remarks);
+        if (StringUtils.isNotBlank(packing)) {
+            busiGoodsPrice.setGoodsPacking(Long.parseLong(packing));
+        }
+        if (StringUtils.isNotBlank(certificationAuthority)) {
+            busiGoodsPrice.setCertificationAuthority(Long.parseLong(certificationAuthority));
+        }
+        if (StringUtils.isNotBlank(ratingAgencies)) {
+            busiGoodsPrice.setRatingAgencies(Long.parseLong(ratingAgencies));
+        }
+        if (StringUtils.isNotBlank(priceType)) {
+            busiGoodsPrice.setPriceType(Long.parseLong(priceType));
+        }
+        if (StringUtils.isNotBlank(priceSource)) {
+            busiGoodsPrice.setPriceSource(Long.parseLong(priceSource));
+        }
+        if (StringUtils.isNotBlank(goodsId)) {
+            busiGoodsPrice.setGoodsId(Long.parseLong(goodsId));
+        }
+        if (StringUtils.isNotBlank(goodsPrice)) {
+            busiGoodsPrice.setGoodsPrice(Double.parseDouble(goodsPrice));
+        }
+        busiGoodsPrice.setCreateUser(userId);
+        busiGoodsPrice.setCreateUserName(realName);
+        int num = busiGoodsPriceService.save(busiGoodsPrice);
+        if (num > 0) {
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+        } else {
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, new Date().getTime() + "", returnMap));
+        }
+    }
+
+    @PostMapping(value = "/update")
+    public Mono<ResponseResult> update(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> returnMap = new HashMap<>();
+        String id = request.getParameter("id");
+        returnMap.put("dictionariesPacking", Dictionaries.dictionaries_packing);
+        returnMap.put("dictionariesCertificationAuthority", Dictionaries.dictionaries_certification_authority);
+        returnMap.put("dictionariesRatingAgencies", Dictionaries.dictionaries_rating_agencies);
+        returnMap.put("dictionariesPriceType", Dictionaries.dictionaries_price_type);
+        returnMap.put("dictionariesPriceSource", Dictionaries.dictionaries_price_source);
+        BusiGoodsPrice busiGoodsPrice = busiGoodsPriceService.findById(id);
+        returnMap.put("busiGoodsPrice", busiGoodsPrice);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+    }
+
+    @PostMapping(value = "/saveUpdate")
+    public Mono<ResponseResult> saveUpdate(HttpServletRequest request, HttpServletResponse response) throws ParseException {
+        Map<String, Object> returnMap = new HashMap<>();
+        String goodsPrice = request.getParameter("price");
+        String dictionariesPacking = request.getParameter("packing");
+        String dictionariesCertificationAuthority = request.getParameter("certificationAuthority");
+        String dictionariesRatingAgencies = request.getParameter("ratingAgencies");
+        String dictionariesPriceType = request.getParameter("priceType");
+        String dictionariesPriceSource = request.getParameter("priceSource");
+        String businessTime = request.getParameter("businessTime");
+        String ratingFraction = request.getParameter("ratingFraction");
+        String quantity = request.getParameter("quantity");
+        String priceSource = request.getParameter("priceSource");
+        String remarks = request.getParameter("remarks");
+        String goodsId = request.getParameter("goodsId");
+        String id = request.getParameter("id");
+        String userId = (String) request.getSession().getAttribute("userId");
+
+        if(StringUtils.isNotBlank(quantity)&&quantity.length()>15){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "成交量长度不能超过15个字符"));
+        }
+        if(StringUtils.isNotBlank(goodsPrice)&&goodsPrice.length()>15){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "价格长度不能超过15个字符"));
+        }
+        if(StringUtils.isNotBlank(remarks)&&remarks.length()>255){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "备注长度不能超过255个字符"));
+        }
+        BusiGoodsPrice busiGoodsPrice = new BusiGoodsPrice();
+        if (StringUtils.isNotBlank(businessTime)) {
+            SimpleDateFormat sDateFormat=new SimpleDateFormat("yyyy-MM-dd");
+            busiGoodsPrice.setBusinessTime(sDateFormat.parse(businessTime));
+        }
+        busiGoodsPrice.setRatingFraction(ratingFraction);
+        if (StringUtils.isNotBlank(quantity)) {
+            busiGoodsPrice.setQuantity(Long.parseLong(quantity));
+        }
+        if (StringUtils.isNotBlank(priceSource)) {
+            busiGoodsPrice.setPriceSource(Long.parseLong(priceSource));
+        }
+        busiGoodsPrice.setRemarks(remarks);
+        if (StringUtils.isNotBlank(dictionariesPacking)) {
+            busiGoodsPrice.setGoodsPacking(Long.parseLong(dictionariesPacking));
+        }
+        if (StringUtils.isNotBlank(dictionariesCertificationAuthority)) {
+            busiGoodsPrice.setCertificationAuthority(Long.parseLong(dictionariesCertificationAuthority));
+        }
+        if (StringUtils.isNotBlank(dictionariesRatingAgencies)) {
+            busiGoodsPrice.setRatingAgencies(Long.parseLong(dictionariesRatingAgencies));
+        }
+        if (StringUtils.isNotBlank(dictionariesPriceType)) {
+            busiGoodsPrice.setPriceType(Long.parseLong(dictionariesPriceType));
+        }
+        if (StringUtils.isNotBlank(dictionariesPriceSource)) {
+            busiGoodsPrice.setPriceSource(Long.parseLong(dictionariesPriceSource));
+        }
+        if (StringUtils.isNotBlank(goodsId)) {
+            busiGoodsPrice.setGoodsId(Long.parseLong(goodsId));
+        }
+        if (StringUtils.isNotBlank(goodsPrice)) {
+            busiGoodsPrice.setGoodsPrice(Double.parseDouble(goodsPrice));
+        }
+        busiGoodsPrice.setId(Long.parseLong(id));
+        busiGoodsPrice.setEditUser(userId);
+        int num = busiGoodsPriceService.saveUpdate(busiGoodsPrice);
+        if (num > 0) {
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+        } else {
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, new Date().getTime() + "", returnMap));
+        }
+    }
+}

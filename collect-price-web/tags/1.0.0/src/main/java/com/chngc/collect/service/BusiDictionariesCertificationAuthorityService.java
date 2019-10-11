@@ -1,0 +1,74 @@
+package com.chngc.collect.service;
+
+import com.chngc.collect.dao.BusiDictionariesCertificationAuthorityMapper;
+import com.chngc.collect.entity.BusiDictionariesCertificationAuthority;
+import com.chngc.collect.util.Dictionaries;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+/**
+ * @Author:
+ * @Description: 字典-封装认证机构
+ * @Date:Create：in 2019/8/29 14:55
+ * @Modified By：
+ */
+@Slf4j
+@Service
+public class BusiDictionariesCertificationAuthorityService {
+
+    @Autowired
+    private BusiDictionariesCertificationAuthorityMapper busiDictionariesCertificationAuthorityMapper;
+
+    /**
+     * 新增
+     * @param authority
+     */
+    public int save(BusiDictionariesCertificationAuthority authority) {
+        int id = busiDictionariesCertificationAuthorityMapper.insert(authority);
+        if(id > 0){
+            Dictionaries.dictionaries_certification_authority.add(authority);
+        }
+        return id;
+    }
+
+    /**
+     * 列表
+     * @return
+     */
+    public List<BusiDictionariesCertificationAuthority> list() {
+        List<BusiDictionariesCertificationAuthority> authorities= busiDictionariesCertificationAuthorityMapper.selectAll();
+        return authorities;
+    }
+
+    /**
+     *修改
+     * @param authority
+     */
+    public int saveUpdate(BusiDictionariesCertificationAuthority authority) {
+        int i = busiDictionariesCertificationAuthorityMapper.updateByPrimaryKey(authority);
+        if (i>0){
+            List<BusiDictionariesCertificationAuthority>  authorities = Dictionaries.dictionaries_certification_authority;
+            for (BusiDictionariesCertificationAuthority certificationAuthority:authorities) {
+                if (certificationAuthority.getId().equals(authority.getId())) {
+                    certificationAuthority.setDictionariesValue(authority.getDictionariesValue());
+                    certificationAuthority.setEditTime(authority.getEditTime());
+                    certificationAuthority.setEditUser(authority.getEditUser());
+                    break;
+                }
+            }
+        }
+        return i;
+    }
+
+    /**
+     * 查询
+     * @return
+     */
+    public BusiDictionariesCertificationAuthority selectById(Long id) {
+        BusiDictionariesCertificationAuthority authority= busiDictionariesCertificationAuthorityMapper.selectByPrimaryKey(id);
+        return authority;
+    }
+}

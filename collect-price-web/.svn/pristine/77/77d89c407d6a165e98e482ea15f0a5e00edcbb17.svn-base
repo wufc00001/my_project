@@ -1,0 +1,83 @@
+package com.chngc.wechat.web.interceptor;
+
+
+import com.chngc.wechat.web.mv.BaseResponse;
+import com.chngc.wechat.web.mv.ResponseMessage;
+import com.chngc.wechat.web.vo.LoginSign;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.net.URLEncoder;
+
+public class LoginControllerInterceptor extends HandlerInterceptorAdapter {
+	
+	@Override
+	public boolean preHandle(HttpServletRequest request,
+			HttpServletResponse response, Object handler) throws Exception {
+		
+		HttpSession session = request.getSession(true);
+		LoginSign sign = (LoginSign)session.getAttribute(LoginSign.class.getName());
+
+		String path = request.getContextPath();
+		String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+
+//        ////测试用的
+//        sign = new LoginSign();
+//        sign.setOpenId("oVM2uuJFIJgkZJOCpKuPGMbAuS4I");
+//        sign.setMemberId("360255");
+//        session.setAttribute(LoginSign.class.getName(), sign);
+
+		if (sign == null || StringUtils.isBlank(sign.getMemberId())){
+			if (handler instanceof HandlerMethod) {
+				HandlerMethod handlerMethod = (HandlerMethod) handler;
+				Method method = handlerMethod.getMethod();
+				ResponseBody annotation = method.getAnnotation(ResponseBody.class);
+				if (annotation != null){
+					BaseResponse vr = new BaseResponse();
+					vr.setResponseMessage(ResponseMessage._UNLOGIN_ERROR);
+					response.setContentType("application/json; charset=UTF-8");
+					PrintWriter out = response.getWriter();
+					JSONObject jobj = JSONObject.fromObject(vr);
+					out.print(jobj);
+					out.close();
+					return false;
+				}
+			} else {
+				return true;
+			}
+			StringBuilder returnUrlBuilder = new StringBuilder();
+			returnUrlBuilder.append(request.getRequestURL().toString());
+			if (StringUtils.isNotBlank(request.getQueryString())){
+				returnUrlBuilder.append("?");
+				returnUrlBuilder.append(request.getQueryString());
+			}
+			String returnUrl = URLEncoder.encode(returnUrlBuilder.toString(), "UTF-8");
+			response.sendRedirect(basePath + "toAuth?returnUrl=" + returnUrl);
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public void postHandle(HttpServletRequest request,
+			HttpServletResponse response, Object handler,
+			ModelAndView modelAndView) throws Exception {
+		super.postHandle(request, response, handler, modelAndView);
+	}
+
+	@Override
+	public void afterCompletion(HttpServletRequest request,
+			HttpServletResponse response, Object handler, Exception ex)
+			throws Exception {
+		super.afterCompletion(request, response, handler, ex);
+	}
+}

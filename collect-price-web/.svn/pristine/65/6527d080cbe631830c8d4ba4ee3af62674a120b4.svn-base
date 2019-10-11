@@ -1,0 +1,64 @@
+package com.chngc.collect.util;
+
+import com.chngc.collect.entity.BusiDictionariesMaterial;
+import com.chngc.collect.entity.BusiDictionariesProject;
+import com.chngc.collect.service.BusiDictionariesWeightService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+
+@Component
+public class DictionariesInit implements CommandLineRunner {
+    @Autowired
+    private BusiDictionariesWeightService busiDictionariesWeightService;
+    @Override
+    public void run(String... strings) throws Exception {
+//        Dictionaries.dictionaries_project=new ArrayList<>();
+//        Dictionaries.dictionaries_weight=new ArrayList<>();
+//        Dictionaries.dictionaries_material=new ArrayList<>();
+//        Dictionaries.dictionaries_shape=new ArrayList<>();
+//        Dictionaries.dictionaries_packing=new ArrayList<>();
+//        Dictionaries.dictionaries_certification_authority=new ArrayList<>();
+//        Dictionaries.dictionaries_rating_agencies=new ArrayList<>();
+//        Dictionaries.dictionaries_price_type=new ArrayList<>();
+//        Dictionaries.dictionaries_price_source=new ArrayList<>();
+//        Dictionaries.dictionaries_year=new ArrayList<>();
+
+        Dictionaries.dictionaries_weight=busiDictionariesWeightService.findAll();
+
+//        BusiDictionariesProject a=new BusiDictionariesProject();
+//        a.setId(1l);
+//        a.setProjectName("项目1");
+//        a.setAbbreviationName("简称1");
+//        a.setIssueYear(1990l);
+//        BusiDictionariesProject b=new BusiDictionariesProject();
+//        b.setId(2l);
+//        b.setProjectName("项目2");
+//        b.setAbbreviationName("简称2");
+//        b.setIssueYear(1995l);
+//        Dictionaries.dictionaries_project.add(a);
+//        Dictionaries.dictionaries_project.add(b);
+//        BusiDictionariesMaterial c =new BusiDictionariesMaterial();
+//        BusiDictionariesMaterial d=new BusiDictionariesMaterial();
+//        c.setId(1l);
+//        c.setDictionariesValue("金");
+//        c.setEditTime(new Date());
+//        c.setEditUser("123");
+//        d.setId(2l);
+//        d.setDictionariesValue("铁");
+//        d.setEditTime(new Date());
+//        d.setEditUser("173");
+//        Dictionaries.dictionaries_material.add(c);
+//        Dictionaries.dictionaries_material.add(d);
+//        Dictionaries.dictionaries_year.add(1999);
+//        Dictionaries.dictionaries_year.add(2000);
+//        Dictionaries.dictionaries_year.add(2001);
+        System.out.println("字典初始化");
+        System.out.println(Dictionaries.dictionaries_weight.get(0).getDictionariesValue());
+        System.out.println(Dictionaries.dictionaries_weight.get(1).getDictionariesValue());
+    }
+}

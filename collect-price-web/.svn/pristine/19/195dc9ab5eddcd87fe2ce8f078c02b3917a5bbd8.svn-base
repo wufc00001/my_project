@@ -1,0 +1,70 @@
+package com.chngc.collect.controller;
+
+import com.chngc.collect.common.BaseController;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.entity.BusiDictionariesPriceSource;
+import com.chngc.collect.service.BusiDictionariesPriceSourceService;
+import com.chngc.core.common.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.List;
+
+@Slf4j
+@RequestMapping("/manager/busi_dictionaries_price_source")
+@RestController
+public class BusiDictionariesPriceSourceController extends BaseController {
+    @Autowired
+    private BusiDictionariesPriceSourceService busiDictionariesPriceSourceService;
+
+    @PostMapping(value = "/list")
+    public Mono<ResponseResult> list(HttpServletRequest request, HttpServletResponse response) {
+        List<BusiDictionariesPriceSource> busiDictionariesPriceSourceList = busiDictionariesPriceSourceService.getLsit();
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", busiDictionariesPriceSourceList));
+    }
+
+    @PostMapping(value = "/save")
+    public Mono<ResponseResult> save(HttpServletRequest request, HttpServletResponse response) {
+        String userId = (String) request.getSession().getAttribute("userId");
+        String dictionariesValue = request.getParameter("dictionariesValue");
+        if(StringUtils.isBlank(dictionariesValue)){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "价格来源名称不能为空"));
+        }
+        if(dictionariesValue.length()>50){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "价格来源不能超过50个字符" ));
+        }
+        BusiDictionariesPriceSource source = busiDictionariesPriceSourceService.save(dictionariesValue,userId);
+        if (source!=null&&source.getId() != null) {
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, "新增保存成功",source));
+        }
+        return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE,  "新增保存失败"));
+
+    }
+
+    @PostMapping(value = "/saveUpdate")
+    public Mono<ResponseResult> saveUpdate(HttpServletRequest request, HttpServletResponse response){
+        String userId = (String) request.getSession().getAttribute("userId");
+        String dictionariesValue = request.getParameter("dictionariesValue");
+        Long id =  Long.valueOf(request.getParameter("id"));
+        if(StringUtils.isBlank(dictionariesValue)){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "价格来源名称不能为空"));
+        }
+        if(dictionariesValue.length()>50){
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "价格来源不能超过50个字符" ));
+        }
+        Long num = busiDictionariesPriceSourceService.saveUpdate(id, userId, dictionariesValue);
+        if(num > 0){
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, "修改成功"));
+        }
+        return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "修改失败"));
+
+    }
+}

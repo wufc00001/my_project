@@ -1,0 +1,77 @@
+package com.chngc.collect.interceptor;
+
+
+
+
+import com.alibaba.fastjson.JSONObject;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.service.CoreUserService;
+import com.chngc.collect.vo.Permission;
+import com.chngc.core.common.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.PrintWriter;
+import java.net.URLEncoder;
+import java.util.Map;
+
+@Slf4j
+public class LoginControllerInterceptor extends HandlerInterceptorAdapter {
+	@Autowired
+	private CoreUserService coreUserService;
+	@Override
+	public boolean preHandle(HttpServletRequest request,
+							 HttpServletResponse response, Object handler) throws Exception {
+
+		String path = request.getContextPath();
+		String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+		Boolean loginFlag = coreUserService.getOnlineUserId(request, response);
+		if (!loginFlag) {
+			StringBuilder returnUrlBuilder = new StringBuilder();
+			returnUrlBuilder.append(request.getRequestURL().toString());
+			if (StringUtils.isNotBlank(request.getQueryString())){
+				returnUrlBuilder.append("?");
+				returnUrlBuilder.append(request.getQueryString());
+			}
+			String returnUrl = URLEncoder.encode(returnUrlBuilder.toString(), "UTF-8");
+			response.sendRedirect(basePath + "user/login.html?returnUrl=" + returnUrl);
+			return false;
+		} else {
+			HttpSession session = request.getSession(true);
+			Map<String,Boolean> permissionMap = (Map) session.getAttribute("components");
+			// 判断访问是否有权限
+			String permissionCode = request.getParameter("componentCode");
+			Boolean permissionFlag = permissionMap.get(permissionCode);
+			if(permissionFlag){
+				ResponseResult result = new ResponseResult();
+				response.setContentType("application/json; charset=UTF-8");
+				result.setMsg("对不起，您没有访问权限");
+				PrintWriter out = response.getWriter();
+				JSONObject obj = (JSONObject) JSONObject.toJSON(result);
+				out.print(obj);
+				out.close();
+				return false;
+			}
+			return true;
+		}
+	}
+
+	@Override
+	public void postHandle(HttpServletRequest request,
+						   HttpServletResponse response, Object handler,
+						   ModelAndView modelAndView) throws Exception {
+		super.postHandle(request, response, handler, modelAndView);
+	}
+
+	@Override
+	public void afterCompletion(HttpServletRequest request,
+								HttpServletResponse response, Object handler, Exception ex)
+			throws Exception {
+		super.afterCompletion(request, response, handler, ex);
+	}
+}

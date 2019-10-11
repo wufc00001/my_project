@@ -1,0 +1,78 @@
+package com.chngc.collect.controller;
+
+import com.chngc.collect.common.BaseController;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.entity.BusiDictionariesShape;
+import com.chngc.collect.entity.BusiDictionariesWeight;
+import com.chngc.collect.service.BusiDictionariesWeightService;
+import com.chngc.collect.util.Dictionaries;
+import com.chngc.core.common.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
+
+@Slf4j
+@RequestMapping("/manager/busi_dictionaries_weight")
+@RestController
+public class BusiDictionariesWeightController extends BaseController {
+    @Autowired
+    private BusiDictionariesWeightService busiDictionariesWeightService;
+
+    @PostMapping(value = "/list")
+    public Mono<ResponseResult> list(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> returnMap = new HashMap<>();
+        returnMap.put("dictionariesWeight", Dictionaries.dictionaries_weight);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+    }
+
+    @PostMapping(value = "/save")
+    public Mono<ResponseResult> save(HttpServletRequest request, HttpServletResponse response) {
+        String value = htmlEscape(request.getParameter("value"));
+        Map<String, Object> returnMap = new HashMap<>();
+        long num = busiDictionariesWeightService.save(value);
+        if (num > 0) {
+            BusiDictionariesWeight busiDictionariesWeight=new BusiDictionariesWeight();
+            busiDictionariesWeight.setId(num);
+            busiDictionariesWeight.setDictionariesValue(value);
+            Dictionaries.dictionaries_weight.add(busiDictionariesWeight);
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+        }else{
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, new Date().getTime() + "", returnMap));
+        }
+    }
+    @PostMapping(value = "/saveUpdate")
+    public Mono<ResponseResult> saveUpdate(HttpServletRequest request, HttpServletResponse response){
+        String userId = (String) request.getSession().getAttribute("userId");
+        String dictionariesValue = htmlEscape(request.getParameter("dictionariesValue"));
+        Long id =  Long.valueOf(htmlEscape(request.getParameter("id")));
+        if(StringUtils.isBlank(dictionariesValue)){
+            return Mono.justOrEmpty(buildResult("02", "价格类型名称不能为空"));
+        }
+        BusiDictionariesWeight busiDictionariesWeight=new BusiDictionariesWeight();
+        busiDictionariesWeight.setId(id);
+        busiDictionariesWeight.setDictionariesValue(dictionariesValue);
+        busiDictionariesWeight.setEditUser(userId);
+        int num = busiDictionariesWeightService.saveUpdate(busiDictionariesWeight);
+        if(num > 0){
+            List<BusiDictionariesWeight> list = Dictionaries.dictionaries_weight;
+            for (Iterator<BusiDictionariesWeight> ite = list.iterator(); ite.hasNext();) {
+                BusiDictionariesWeight entity = ite.next();
+                if (entity.getId().equals(busiDictionariesWeight.getId())) {
+                    ite.remove();
+                }
+            }
+            Dictionaries.dictionaries_weight.add(busiDictionariesWeight);
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, "修改成功"));
+        }
+        return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, "修改失败"));
+    }
+}

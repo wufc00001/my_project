@@ -1,0 +1,259 @@
+package com.chngc.collect.controller;
+
+import com.chngc.collect.common.BaseController;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.entity.BusiDictionariesProject;
+import com.chngc.collect.entity.BusiGoods;
+import com.chngc.collect.entity.Uploader;
+import com.chngc.collect.service.BusiGoodsService;
+import com.chngc.collect.util.Dictionaries;
+import com.chngc.core.common.ResponseResult;
+import com.chngc.core.util.DateUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
+
+@Slf4j
+@RequestMapping("/manager/busi_goods")
+@RestController
+public class BusiGoodsController  extends BaseController{
+    @Autowired
+    private BusiGoodsService busiGoodsService;
+    /**
+     *纪念币品种-查询
+     */
+    @PostMapping(value = "/list")
+    public Mono<ResponseResult> list(HttpServletRequest request, HttpServletResponse response) {
+        //项目名称
+        String projectName=request.getParameter("projectName");
+        //纪念币名称
+        String goodsName=request.getParameter("goodsName");
+        //纪念币年份
+        String goodsYear=request.getParameter("goodsYear");
+        //材质
+        String goodsMaterial=request.getParameter("goodsMaterial");
+        //形状
+        String goodsShape=request.getParameter("goodsShape");
+        //页数
+        int pageNo=Integer.parseInt(request.getParameter("pageNo"));
+        //条数
+        int pageSize=Integer.parseInt(request.getParameter("pageSize"));
+        List<Long> projectNameList=new ArrayList<>();
+        if(StringUtils.isNotBlank(projectName)) {
+            for (BusiDictionariesProject busiDictionariesProject : Dictionaries.dictionaries_project) {
+                if (busiDictionariesProject.getProjectName().indexOf(projectName) > 0) {
+                    projectNameList.add(busiDictionariesProject.getId());
+                }
+            }
+            if(projectNameList.size()==0){
+                projectNameList.add(0l);
+            }
+        }
+        Map<String,Object> map=new HashMap<>();
+        map.put("pageNo",pageNo);
+        map.put("pageSize",pageSize);
+        map.put("goodsName",goodsName);
+        map.put("goodsYear",goodsYear);
+        map.put("goodsMaterial",goodsMaterial);
+        map.put("goodsShape",goodsShape);
+        map.put("limit",(pageNo-1)*pageSize);
+        map.put("projectNameList",projectNameList);
+        List<Map> busiGoodsList = busiGoodsService.list(map);
+        int listCount=busiGoodsService.listCount(map);
+        Map<String,Object> returnMap=new HashMap<>();
+        returnMap.put("dictionariesMaterial",Dictionaries.dictionaries_material);
+        returnMap.put("dictionariesShape",Dictionaries.dictionaries_shape);
+        returnMap.put("dictionariesYear",Dictionaries.dictionaries_year);
+        returnMap.put("busiGoodsList",busiGoodsList);
+        returnMap.put("listCount",listCount);
+        returnMap.put("pageNo",pageNo);
+        returnMap.put("pageSize",pageSize);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,new Date().getTime()+"",returnMap));
+    }
+
+    /**
+     * 纪念币品种-新增
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/add")
+    public Mono<ResponseResult> add( HttpServletRequest request, HttpServletResponse response) {
+        Map<String,Object> returnMap=new HashMap<>();
+        //材质
+        returnMap.put("dictionariesMaterial",Dictionaries.dictionaries_material);
+        //形状
+        returnMap.put("dictionariesShape",Dictionaries.dictionaries_shape);
+        //重量
+        returnMap.put("dictionariesWeight",Dictionaries.dictionaries_weight);
+        //项目名称
+        returnMap.put("dictionariesProject",Dictionaries.dictionaries_project);
+        //年份
+        returnMap.put("dictionariesYear",Dictionaries.dictionaries_year);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,new Date().getTime()+"",returnMap));
+    }
+    /**
+     * 纪念币品种-保存
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/save")
+    public Mono<ResponseResult> save( HttpServletRequest request, HttpServletResponse response)throws IOException {
+        Map<String,Object> returnMap=new HashMap<>();
+        //项目名称
+        String projectName=request.getParameter("projectName");
+        //品种名称
+        String goodsName=request.getParameter("goodsName");
+        //类型
+        String goodsType=request.getParameter("goodsType");
+        //币面年份
+        String goodsYear=request.getParameter("goodsYear");
+        //材质
+        String goodsMaterial=request.getParameter("goodsMaterial");
+        //重量
+        String goodsWeight=request.getParameter("goodsWeight");
+        //重量单位
+        String goodsWeightUnit=request.getParameter("goodsWeightUnit");
+        //形状
+        String goodsShape=request.getParameter("goodsShape");
+        //面额
+        String goodsDenomination=request.getParameter("goodsDenomination");
+        //最大发行量
+        String maxCirculation=request.getParameter("maxCirculation");
+        //实铸量
+        String actualCastingQuantity=request.getParameter("actualCastingQuantity");
+        String userId = (String) request.getSession().getAttribute("userId");
+        String [] files= request.getParameterValues("fileList");
+        BusiGoods busiGoods=new BusiGoods();
+
+        for(String url:files){
+            if(StringUtils.isNotBlank(busiGoods.getImgUrl())) {
+                busiGoods.setImgUrl(busiGoods.getImgUrl() + url + "-");
+            }else{
+                busiGoods.setImgUrl(url + "-");
+            }
+        }
+        busiGoods.setProjectId(projectName);
+        busiGoods.setGoodsName(goodsName);
+        busiGoods.setGoodsType(goodsType);
+        busiGoods.setGoodsYear(goodsYear);
+        if(StringUtils.isNotBlank(goodsMaterial)){
+            busiGoods.setGoodsMaterial(Long.parseLong(goodsMaterial));
+        }
+        busiGoods.setGoodsWeight(goodsWeight);
+        if(StringUtils.isNotBlank(goodsWeightUnit)) {
+            busiGoods.setGoodsWeightUnit(Long.parseLong(goodsWeightUnit));
+        }
+        busiGoods.setGoodsShape(goodsShape);
+        busiGoods.setGoodsDenomination(goodsDenomination);
+        if(StringUtils.isNotBlank(maxCirculation)) {
+            busiGoods.setMaxCirculation(Long.parseLong(maxCirculation));
+        }
+        if(StringUtils.isNotBlank(actualCastingQuantity)) {
+            busiGoods.setActualCastingQuantity(Long.parseLong(actualCastingQuantity));
+        }
+        busiGoods.setCreateTime(new Date());
+        busiGoods.setCreateUser(userId);
+        int saveNum= busiGoodsService.save(busiGoods);
+        if(saveNum>0) {
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE, new Date().getTime() + "", returnMap));
+        }else{
+            return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE, new Date().getTime() + "", returnMap));
+        }
+    }
+
+    /**
+     * 纪念币品种-纠错
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/update")
+    public Mono<ResponseResult> update(HttpServletRequest request, HttpServletResponse response) {
+        Map<String,Object> returnMap=new HashMap<>();
+        String id=request.getParameter("id");
+       Map busiGoods= busiGoodsService.findById(id);
+        returnMap.put("busiGoods",busiGoods);
+        returnMap.put("dictionariesMaterial",Dictionaries.dictionaries_material);
+        returnMap.put("dictionariesShape",Dictionaries.dictionaries_shape);
+        returnMap.put("dictionariesWeight",Dictionaries.dictionaries_weight);
+        returnMap.put("dictionariesProject",Dictionaries.dictionaries_project);
+        returnMap.put("dictionariesYear",Dictionaries.dictionaries_year);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,new Date().getTime()+"",returnMap));
+    }
+
+    /**
+     * 纪念币品种-纠错保存
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/saveUpdate")
+    public Mono<ResponseResult> saveUpdate(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Map<String,Object> returnMap=new HashMap<>();
+        String projectName=request.getParameter("projectName");
+        String goodsName=request.getParameter("goodsName");
+        String goodsType=request.getParameter("goodsType");
+        String goodsYear=request.getParameter("goodsYear");
+        String goodsMaterial=request.getParameter("goodsMaterial");
+        String goodsWeight=request.getParameter("goodsWeight");
+        String goodsWeightUnit=request.getParameter("goodsWeightUnit");
+        String goodsShape=request.getParameter("goodsShape");
+        String goodsDenomination=request.getParameter("goodsDenomination");
+        String maxCirculation=request.getParameter("maxCirculation");
+        String actualCastingQuantity=request.getParameter("actualCastingQuantity");
+        String id=request.getParameter("id");
+        String userId = (String) request.getSession().getAttribute("userId");
+       String [] files= request.getParameterValues("fileList");
+        BusiGoods busiGoods=new BusiGoods();
+
+        for(String url:files){
+            if(StringUtils.isNotBlank(busiGoods.getImgUrl())) {
+                busiGoods.setImgUrl(busiGoods.getImgUrl() + url + "-");
+            }else{
+                busiGoods.setImgUrl(url + "-");
+            }
+        }
+        if(StringUtils.isNotBlank(busiGoods.getImgUrl())){
+            busiGoods.setImgUrl(busiGoods.getImgUrl().substring(0,busiGoods.getImgUrl().length()-1));
+        }
+        busiGoods.setProjectId(projectName);
+        busiGoods.setGoodsName(goodsName);
+        busiGoods.setGoodsType(goodsType);
+        busiGoods.setGoodsYear(goodsYear);
+        if(StringUtils.isNotBlank(goodsMaterial)){
+            busiGoods.setGoodsMaterial(Long.parseLong(goodsMaterial));
+        }
+        busiGoods.setGoodsWeight(goodsWeight);
+        if(StringUtils.isNotBlank(goodsWeightUnit)) {
+            busiGoods.setGoodsWeightUnit(Long.parseLong(goodsWeightUnit));
+        }
+        busiGoods.setGoodsShape(goodsShape);
+        busiGoods.setGoodsDenomination(goodsDenomination);
+        if(StringUtils.isNotBlank(maxCirculation)) {
+            busiGoods.setMaxCirculation(Long.parseLong(maxCirculation));
+        }
+        if(StringUtils.isNotBlank(actualCastingQuantity)) {
+            busiGoods.setActualCastingQuantity(Long.parseLong(actualCastingQuantity));
+        }
+        busiGoods.setId(Long.parseLong(id));
+        busiGoods.setEditUser(userId);
+        String nowDateDay = DateUtils.yyyyMMddHHmmssSSS(); //获取当前日期
+        Uploader uploader = new Uploader();
+        uploader.setFileName(String.valueOf(DateUtils.yyyyMMdd()));
+        uploader.setSavePath(Constants.EXPERT_APPLICATION_PIC_STANDARD + nowDateDay);
+        int saveNum= busiGoodsService.saveUpdate(busiGoods);
+        System.out.println(busiGoods.getImgUrl().length());
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,new Date().getTime()+"",returnMap));
+    }
+}

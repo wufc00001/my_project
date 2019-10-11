@@ -1,0 +1,15 @@
+server.port=8083
+
+#redis
+spring.redis.host=192.168.170.235
+spring.redis.port=6379
+
+#\u6570\u636E\u6E90
+spring.datasource.url=jdbc:mysql://192.168.170.235:3306/ctces_release?serverTimezone=Asia/Shanghai&autoReconnect=true&useUnicode=true&characterEncoding=utf8&allowMultiQueries=true
+spring.datasource.username=root
+spring.datasource.password=123.com
+
+#log
+logging.level.java.sql=debug
+logging.level.org.springframework.jdbc=debug
+logging.level.com.chngc=debug

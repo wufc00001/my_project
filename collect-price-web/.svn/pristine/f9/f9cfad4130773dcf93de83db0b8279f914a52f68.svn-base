@@ -1,0 +1,106 @@
+package com.chngc.collect.controller;
+
+import com.chngc.collect.common.BaseController;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.entity.CoreUser;
+import com.chngc.collect.service.CoreUserService;
+import com.chngc.collect.util.CheckUtils;
+import com.chngc.collect.util.CookieUtils;
+import com.chngc.collect.vo.Permission;
+import com.chngc.core.common.ResponseResult;
+import com.chngc.core.util.EncryptUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.Map;
+
+/**
+ * Created by wufc on 2019/8/22.
+ */
+@Slf4j
+@RequestMapping("/user")
+@RestController
+public class LoginController extends BaseController{
+    @Autowired
+    private CoreUserService coreUserService;
+
+    /**
+     *   退出登录
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/logout")
+    public Mono<ResponseResult> logout(HttpServletRequest request,HttpServletResponse response) {
+        request.getSession().invalidate();
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,"退出成功"));
+    }
+
+    /**
+     * 登录
+     * @param loginName
+     * @param password
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/login")
+    public Mono<ResponseResult> login(@Param("loginName") String loginName, @Param("password") String password, HttpServletRequest request,
+                                      HttpServletResponse response) {
+        // 判断  登录用户名和密码
+        Permission pm = coreUserService.login(loginName,password);
+        // 如果登录成功
+        String msg = Constants.NOLOGIN_MSG;
+        if(Constants.LOGINOK.equals(pm.getLoginState())){
+            // 登录信息放入session
+            request.getSession().setAttribute("loginName",pm.getLoginName());
+            request.getSession().setAttribute("realName",pm.getRealName());
+            request.getSession().setAttribute("userId",pm.getUserId());
+            request.getSession().setAttribute("components", pm.getComponents());
+            msg = Constants.LOGINOK_MSG;
+            //cookie返回域名
+            String path = request.getContextPath();
+            String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+            CookieUtils cookieUtils=new CookieUtils();
+            cookieUtils.setCookie(response,"basePath",basePath,-1,false);
+        }
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,msg,pm));
+    }
+
+    /**
+     *  修改密码
+     * @param request
+     * @param response
+     * @return
+     */
+    @PostMapping(value = "/modifyPwd")
+    public Mono<ResponseResult> modifyPwd(HttpServletRequest request,HttpServletResponse response) {
+        String userId =  (String)request.getSession().getAttribute("userId");
+        String oldPassword =  request.getParameter("oldPassword");
+        String newPassword =  request.getParameter("newPassword");
+        log.info("####modifyPwd####oldPassword:"+oldPassword +"####newPassword:"+newPassword);
+        CoreUser coreUser = coreUserService.getCoreUserByUserId(userId);
+        Map<String, String>  map = CheckUtils.checkPassword(oldPassword,newPassword,coreUser);
+        if(!map.isEmpty()){
+            return Mono.justOrEmpty(buildResult(map.get("code"),map.get("msg")));
+        }
+        newPassword = EncryptUtil.getMD5(newPassword);
+        coreUser.setPassword(newPassword);
+        coreUser.setModifyTime(new Date());
+        coreUser.setModifyUser(coreUser.getUserId());
+        Integer num = coreUserService.saveUpdate(coreUser);
+        if(num > 0){
+            return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,"密码修改成功"));
+        }
+        return Mono.justOrEmpty(buildResult(Constants.FAIL_CODE,"密码修改失败"));
+    }
+
+
+}

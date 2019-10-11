@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.BusiGoodsPriceMapper">
+    <resultMap id="BaseResultMap" type="com.chngc.collect.entity.BusiGoodsPrice">
+        <result property="id" column="id"/>
+        <result property="goodsId" column="goods_id"/>
+        <result property="goodsPacking" column="goods_packing"/>
+        <result property="certificationAuthority" column="certification_authority"/>
+        <result property="ratingAgencies" column="rating_agencies"/>
+        <result property="ratingFraction" column="rating_fraction"/>
+        <result property="priceType" column="price_type"/>
+        <result property="goodsPrice" column="goods_price"/>
+        <result property="priceSource" column="price_source"/>
+        <result property="quantity" column="quantity"/>
+        <result property="remarks" column="remarks"/>
+        <result property="businessTime" column="business_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="createUser" column="create_user"/>
+        <result property="createUserName" column="create_user_name"/>
+        <result property="editTime" column="edit_time"/>
+        <result property="editUser" column="edit_user"/>
+    </resultMap>
+
+    <select id="list" resultType="java.util.Map" parameterType="java.util.Map">
+        select bgp.*,bg.goods_name,bg.project_id from busi_goods_price bgp INNER JOIN busi_goods bg on bgp.goods_id=bg.id
+        <if test="issueYear != null and issueYear != ''">
+             INNER JOIN busi_dictionaries_project bdp
+            on bdp.id=bg.project_id
+        </if>
+        where 1=1
+        <if test="issueYear != null  and issueYear != ''">
+            and bdp.issue_year=#{issueYear}
+        </if>
+        <if test="null != projectNameList and projectNameList.size > 0">
+            and bg.project_id in
+            <foreach item="projectId" index="index" collection="projectNameList" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+        </if>
+        <if test="goodsName != null and goodsName!=''">
+            and goods_id in(select id from busi_goods where goods_name like '%${goodsName}%')
+        </if>
+        <if test="goodsYear != null and goodsYear!=''">
+            and goods_id in(select id from busi_goods where goods_year = #{goodsYear})
+        </if>
+        <if test="goodsPacking != null and goodsPacking!=''">
+            and goods_packing = #{goodsPacking}
+        </if>
+        <if test="priceSource != null and priceSource!=''">
+            and price_source = #{priceSource}
+        </if>
+        <if test="priceType != null and priceType!=''">
+            and price_type = #{priceType}
+        </if>
+        <if test="goodsId != null and goodsId!=''">
+            and goods_id = #{goodsId}
+        </if>
+        order by bgp.id desc
+        limit #{limit,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+    </select>
+    <select id="listCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+        select count(1) from busi_goods_price bgp INNER JOIN busi_goods bg on bgp.goods_id=bg.id
+        <if test="issueYear != null  and issueYear != ''">
+             INNER JOIN busi_dictionaries_project bdp
+            on bdp.id=bg.project_id
+        </if>
+        where 1=1
+        <if test="issueYear != null  and issueYear != ''">
+            and bdp.issue_year=#{issueYear}
+        </if>
+        <if test="null != projectNameList and projectNameList.size > 0">
+            and bg.project_id in
+            <foreach item="projectId" index="index" collection="projectNameList" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+        </if>
+        <if test="goodsName != null and goodsName!=''">
+            and goods_id in(select id from busi_goods where goods_name like '%${goodsName}%')
+        </if>
+        <if test="goodsYear != null and goodsYear != ''">
+            and goods_id in(select id from busi_goods where goods_year = #{goodsYear})
+        </if>
+        <if test="goodsPacking != null and goodsPacking!=''">
+            and goods_packing = #{goodsPacking}
+        </if>
+        <if test="priceSource != null and priceSource!=''">
+            and price_source = #{priceSource}
+        </if>
+        <if test="priceType != null and priceType!=''">
+            and price_type = #{priceType}
+        </if>
+        <if test="goodsId != null and goodsId!=''">
+            and goods_id = #{goodsId}
+        </if>
+    </select>
+
+    <insert id="save" parameterType="com.chngc.collect.entity.BusiGoodsPrice">
+        insert into busi_goods_price
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null and goodsId != ''">
+                goods_id,
+            </if>
+            <if test="goodsPacking != null and goodsPacking != ''">
+                goods_packing,
+            </if>
+            <if test="certificationAuthority != null and certificationAuthority != ''">
+                certification_authority,
+            </if>
+            <if test="ratingAgencies != null and ratingAgencies != ''">
+                rating_agencies,
+            </if>
+            <if test="ratingFraction != null and ratingFraction != ''">
+                rating_fraction,
+            </if>
+            <if test="priceType != null and priceType != ''">
+                price_type,
+            </if>
+            <if test="goodsPrice != null and goodsPrice != ''">
+                goods_price,
+            </if>
+            <if test="priceSource != null and priceSource != ''">
+                price_source,
+            </if>
+            <if test="quantity != null and quantity != ''">
+                quantity,
+            </if>
+            <if test="remarks != null and remarks != ''">
+                remarks,
+            </if>
+            <if test="businessTime != null">
+                business_time,
+            </if>
+            <if test="createUserName != null and createUserName != ''">
+                create_user_name,
+            </if>
+                create_time,
+                create_user,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null  and goodsId != ''">
+                #{goodsId,jdbcType=INTEGER},
+            </if>
+            <if test="goodsPacking != null and goodsPacking != ''">
+                #{goodsPacking},
+            </if>
+            <if test="certificationAuthority != null and certificationAuthority != ''">
+                #{certificationAuthority},
+            </if>
+            <if test="ratingAgencies != null and ratingAgencies != ''">
+                #{ratingAgencies},
+            </if>
+            <if test="ratingFraction != null and ratingFraction != ''">
+                #{ratingFraction},
+            </if>
+            <if test="priceType != null and priceType != ''">
+                #{priceType},
+            </if>
+            <if test="goodsPrice != null and goodsPrice != ''">
+                #{goodsPrice},
+            </if>
+            <if test="priceSource != null and priceSource != ''">
+                #{priceSource},
+            </if>
+            <if test="quantity != null and quantity != ''">
+                #{quantity},
+            </if>
+            <if test="remarks != null and remarks != ''">
+                #{remarks},
+            </if>
+            <if test="businessTime != null">
+                #{businessTime},
+            </if>
+            <if test="createUserName != null and createUserName != ''">
+                #{createUserName},
+            </if>
+               now(),
+                #{createUser},
+        </trim>
+    </insert>
+
+    <select id="findById" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select * from busi_goods_price where id=#{id}
+    </select>
+
+    <update id="saveUpdate" parameterType="com.chngc.collect.entity.BusiGoodsPrice">
+        update busi_goods_price
+        <set>
+                goods_packing=#{goodsPacking},
+                certification_authority=#{certificationAuthority},
+                rating_agencies=#{ratingAgencies},
+                rating_fraction=#{ratingFraction},
+                price_type=#{priceType},
+                goods_price=#{goodsPrice},
+                price_source=#{priceSource},
+                quantity=#{quantity},
+                remarks=#{remarks},
+                business_time=#{businessTime},
+                edit_time=#{editTime},
+                edit_user=#{editUser},
+        </set>
+        where id=#{id}
+    </update>
+</mapper>

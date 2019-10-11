@@ -1,0 +1,16 @@
+package com.chngc.collect.dao;
+
+import com.chngc.collect.entity.GoodsInfo;
+import com.chngc.core.annotation.SqlMapper;
+
+import java.util.List;
+
+@SqlMapper
+public interface EsGoodsMapper {
+    /**
+     * 查找上架商品
+     * @return
+     */
+    List<GoodsInfo> findAliveGoodsInfo();
+
+}

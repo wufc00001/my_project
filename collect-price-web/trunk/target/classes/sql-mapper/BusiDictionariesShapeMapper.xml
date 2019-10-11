@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.BusiDictionariesShapeMapper">
+    <resultMap id="BaseResultMap" type="com.chngc.collect.entity.BusiDictionariesShape">
+        <result property="id" column="id"/>
+        <result property="dictionariesValue" column="dictionaries_value"/>
+        <result property="editTime" column="edit_time"/>
+        <result property="editUser" column="edit_user"/>
+    </resultMap>
+    <select id="findAll"  resultMap="BaseResultMap">
+        select * from busi_dictionaries_shape order by id desc
+    </select>
+    <insert id="save" parameterType="com.chngc.collect.entity.BusiDictionariesWeight" useGeneratedKeys="true" keyProperty="id">
+        INSERT  INTO busi_dictionaries_shape(dictionaries_value,edit_time,edit_user)
+     VALUES (#{dictionariesValue},#{editTime},#{editUser})
+    </insert>
+    <update id="saveUpdate">
+      update busi_dictionaries_shape
+      <set>
+          dictionaries_value=#{dictionariesValue},
+          edit_time=now(),
+          edit_user=#{editUser},
+      </set>
+        where id=#{id}
+    </update>
+
+    </mapper>

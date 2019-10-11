@@ -1,0 +1,131 @@
+package com.chngc.collect.util;
+
+import com.chngc.collect.entity.CoreUser;
+import com.chngc.collect.form.BusiProjectForm;
+import com.chngc.collect.service.CoreUserService;
+import com.chngc.core.util.EncryptUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Component
+public class CheckUtils {
+
+    public static Map<String,String> checkUserFiledError(CoreUser coreUser){
+        Map<String, String> map = new HashMap<>();
+        if(StringUtils.isBlank(coreUser.getLoginName())){
+            map.put("code","01");
+            map.put("msg","账号不能为空");
+            return map;
+        }
+        if(coreUser.getLoginName().length() > 15){
+            map.put("code","02");
+            map.put("msg","账号长度不能超过15个字符");
+            return map;
+        }
+        // 先构建 Pattern 对象
+        Pattern pattern = Pattern.compile("^[0-9a-zA-Z]+$");
+        // 调用 Pattern 对象的 matcher 方法，传入一个串，得到匹配结果！
+        Matcher matcher = pattern.matcher(coreUser.getLoginName());
+        if(!matcher.matches()){
+            map.put("code","03");
+            map.put("msg","账号必须是英文或数字或英文和数字组成");
+            return map;
+        };
+        if(StringUtils.isBlank(coreUser.getRealName())){
+            map.put("code","04");
+            map.put("msg","姓名不能为空");
+            return map;
+        }
+        if(coreUser.getRealName().length()>30){
+            map.put("code","05");
+            map.put("msg","姓名长度不能大于30个字符");
+            return map;
+        }
+        if(StringUtils.isBlank(coreUser.getMobile())){
+            map.put("code","06");
+            map.put("msg","手机号不能为空");
+            return map;
+        }
+        // 先构建 Pattern 对象
+        Pattern pattern2 = Pattern.compile("1\\d{10}");
+        // 调用 Pattern 对象的 matcher 方法，传入一个串，得到匹配结果！
+        Matcher matcher2 = pattern2.matcher(coreUser.getMobile());
+        if(coreUser.getMobile().length() != 11){
+            map.put("code","10");
+            map.put("msg","手机号不正确");
+            return map;
+        }
+        if(StringUtils.isBlank(coreUser.getRoleIds())){
+            map.put("code","07");
+            map.put("msg","请选择角色");
+            return map;
+        }
+        return map;
+    }
+
+
+    public static Map<String, String> checkProjectFiledError(BusiProjectForm form) {
+        Map<String, String> map = new HashMap<>();
+        if(StringUtils.isBlank(form.getProjectName())){
+            map.put("code","02");
+            map.put("msg","项目名不能为空");
+            return map;
+        }
+        if(form.getProjectName().length()> 50){
+            map.put("code","03");
+            map.put("msg","项目名长度不能超过50个字符");
+            return map;
+        }
+        if(StringUtils.isBlank(form.getAbbreviationName())){
+            map.put("code","04");
+            map.put("msg","项目简称不能为空");
+            return map;
+        }
+        if(form.getAbbreviationName().length() > 30){
+            map.put("code","05");
+            map.put("msg","项目简称长度不能大于30个字符");
+            return map;
+        }
+        if(StringUtils.isBlank(form.getIssuanceDay())){
+            map.put("code","06");
+            map.put("msg","发行日不能为空");
+            return map;
+        }
+        return map;
+    }
+    /**
+     * 校验密码
+     * @param oldPassword
+     * @param newPassword
+     * @param coreUser
+     * @return
+     */
+    public static Map<String,String> checkPassword(String oldPassword, String newPassword, CoreUser coreUser) {
+        Map<String, String> map = new HashMap<>();
+        if(StringUtils.isBlank(oldPassword)){
+            map.put("code","01");
+            map.put("msg","旧密码不能为空");
+            return map;
+        }
+        if(StringUtils.isBlank(newPassword)){
+            map.put("code","02");
+            map.put("msg","新密码不能为空");
+            return map;
+        }
+        oldPassword =  EncryptUtil.getMD5(oldPassword);
+        if(!oldPassword.equals(coreUser.getPassword())){
+            map.put("code","03");
+            map.put("msg","密码错误");
+            return map;
+        }
+        return map;
+    }
+
+
+}

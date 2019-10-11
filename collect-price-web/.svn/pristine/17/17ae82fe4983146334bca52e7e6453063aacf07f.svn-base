@@ -1,0 +1,20 @@
+package com.chngc.collect.dao;
+
+import com.chngc.collect.entity.BusiDictionariesShape;
+import com.chngc.collect.entity.BusiDictionariesWeight;
+import com.chngc.core.annotation.SqlMapper;
+
+import java.util.List;
+
+@SqlMapper
+public interface BusiDictionariesShapeMapper {
+    /**
+     * list
+     * @return
+     */
+    List<BusiDictionariesShape> findAll();
+
+
+    long save(String dictionariesValue);
+    int saveUpdate(BusiDictionariesShape busiDictionariesShape);
+}

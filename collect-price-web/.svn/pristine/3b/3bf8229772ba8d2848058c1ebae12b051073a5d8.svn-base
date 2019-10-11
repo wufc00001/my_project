@@ -1,0 +1,60 @@
+package com.chngc.collect.vo;
+
+import com.chngc.collect.entity.CoreComponent;
+import com.chngc.collect.entity.CoreUser;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by wufc on 2019/8/23.
+ */
+public class Permission {
+
+    // 登录状态 99 未登录  00 登录
+    private String loginState = "99";
+
+    // 请求页面returnUrl
+    private String returnUrl;
+
+    // 登录对象
+    private CoreUser coreUser;
+
+    // 用户权限componentCode : true
+    private Map<String,Boolean> components = new HashMap<>();
+
+
+    public String getLoginState() {
+        return loginState;
+    }
+
+    public void setLoginState(String loginState) {
+        this.loginState = loginState;
+    }
+
+    public CoreUser getCoreUser() {
+        return coreUser;
+    }
+
+    public void setCoreUser(CoreUser coreUser) {
+        this.coreUser = coreUser;
+    }
+
+    public Map<String, Boolean> getComponents() {
+        return components;
+    }
+
+    public void setComponents(Map<String, Boolean> components) {
+        this.components = components;
+    }
+
+    public String getReturnUrl() {
+        return returnUrl;
+    }
+
+    public void setReturnUrl(String returnUrl) {
+        this.returnUrl = returnUrl;
+    }
+}

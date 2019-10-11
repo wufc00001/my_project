@@ -1,0 +1,24 @@
+package com.chngc.collect.util;
+
+import com.chngc.collect.entity.BusiDictionariesMaterial;
+import com.chngc.collect.entity.BusiDictionariesProject;
+import com.chngc.collect.entity.BusiDictionariesShape;
+import com.chngc.collect.entity.BusiDictionariesWeight;
+
+import java.util.List;
+import java.util.Map;
+
+public class Dictionaries {
+    //项目
+    public static Map<Integer, BusiDictionariesProject> dictionaries_project;
+    //材质
+    public static Map<Integer, BusiDictionariesMaterial> dictionaries_material;
+    //形状
+    public static Map<Integer, BusiDictionariesShape> dictionaries_shape;
+    //重量
+    public static Map<Integer, BusiDictionariesWeight> dictionaries_weight;
+    //年份
+    public static List<Integer> dictionaries_year;
+
+
+}

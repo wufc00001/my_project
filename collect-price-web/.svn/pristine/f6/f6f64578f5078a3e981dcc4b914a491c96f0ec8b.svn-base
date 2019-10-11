@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.CoreUserMapper" >
+    <resultMap id="BaseResultMap" type="com.chngc.collect.entity.CoreUser" >
+        <result column="USER_ID" property="userId" jdbcType="VARCHAR" />
+        <result column="REAL_NAME" property="realName" jdbcType="VARCHAR" />
+        <result column="LOGIN_NAME" property="loginName" jdbcType="VARCHAR" />
+        <result column="PASSWORD" property="password" jdbcType="VARCHAR" />
+        <result column="USER_STATUS" property="userStatus" jdbcType="VARCHAR" />
+        <result column="MOBILE" property="mobile" jdbcType="VARCHAR" />
+        <result column="ROLE_IDS" property="roleIds" jdbcType="VARCHAR" />
+        <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+        <result column="MODIFY_USER" property="modifyUser" jdbcType="VARCHAR" />
+        <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    <!--根据登录查询用户-->
+    <select id="getCoreUserByLoginName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select USER_ID,REAL_NAME,LOGIN_NAME,USER_STATUS,MOBILE,ROLE_IDS from core_user where login_name = #{loginName}
+    </select>
+    <!--根据用户id查询用户-->
+    <select id="getCoreUserByUserId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select USER_ID,REAL_NAME,LOGIN_NAME,PASSWORD,USER_STATUS,MOBILE,ROLE_IDS from core_user where user_id = #{userId}
+    </select>
+    <!--修改用户信息-->
+    <update id="saveUpdate" parameterType="com.chngc.collect.entity.CoreUser">
+        update core_user set
+        <if test="password !=null and password !=''">
+            PASSWORD = #{password},
+        </if>
+        <if test="realName !=null and realName !=''">
+            REAL_NAME = #{realName},
+        </if>
+        <if test="loginName !=null and loginName !=''">
+            LOGIN_NAME = #{loginName},
+        </if>
+        <if test="userStatus !=null and userStatus !=''">
+            USER_STATUS = #{userStatus },
+        </if>
+        <if test="mobile !=null and mobile !=''">
+            MOBILE = #{mobile},
+        </if>
+        <if test="roleIds !=null and roleIds !=''">
+            ROLE_IDS = #{roleIds},
+        </if>
+        <if test="modifyUser !=null and modifyUser !=''">
+            MODIFY_USER = #{modifyUser},
+        </if>
+        <if test="modifyTime !=null and modifyTime !=''">
+            MODIFY_TIME = #{modifyTime}
+        </if>
+        where user_id = #{userId }
+    </update>
+    <!--新增会员-->
+    <insert id="save" parameterType="com.chngc.collect.entity.CoreUser">
+        insert into core_user (USER_ID,REAL_NAME,LOGIN_NAME,PASSWORD,USER_STATUS,MOBILE,ROLE_IDS,CREATE_USER,CREATE_TIME)
+        values (#{userId},#{realName},#{loginName},#{password},#{userStatus},#{mobile},#{roleIds},#{createUser},#{createTime})
+    </insert>
+    <!--查询所有会员-->
+    <select id="getAllCoreUser" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select USER_ID,REAL_NAME,LOGIN_NAME,PASSWORD,USER_STATUS,MOBILE,ROLE_IDS from core_user order by create_time desc
+    </select>
+
+    <!--根据手机号查询用户-->
+    <select id="getCoreUserByMobile" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select USER_ID,REAL_NAME,LOGIN_NAME,USER_STATUS,MOBILE,ROLE_IDS from core_user where mobile = #{mobile}
+    </select>
+
+</mapper>

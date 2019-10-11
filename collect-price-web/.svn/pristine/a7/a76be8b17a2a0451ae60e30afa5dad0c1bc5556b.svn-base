@@ -1,0 +1,402 @@
+package com.chngc.front.util;
+
+import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisSentinelPool;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @FileName: JedisUtil 此类注入的是新的redis哨兵
+ * @Version: 1.0
+ * @Author: sunruimin
+ * @Date: 2016/5/24 16:32
+ */
+@Slf4j
+@Component
+public class JedisUtils {
+    @Autowired
+    private JedisSentinelPool jedisSentinelPool;
+    private Integer dbNum = 0;
+
+    /**
+     * 获取redis连接
+     *
+     * @param dbNum
+     * @return
+     */
+    public Jedis getJedis(int dbNum) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisSentinelPool.getResource();
+            jedis.select(dbNum);
+        } catch (Exception e) {
+            log.error("JedisUtil 获取redis连接异常" + e.getMessage(), e);
+        }
+        return jedis;
+    }
+
+    /**
+     * 关闭jedis连接
+     *
+     * @param jedis
+     */
+    public void destroy(Jedis jedis) {
+        try {
+            if (jedis != null) {
+                jedis.close();
+            }
+        } catch (Exception e) {
+            log.error("JedisUtil 关闭jedis连接异常" + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 获取redis 库中的值 get
+     *
+     * @param key
+     */
+    public String get(int dbNum, String key) {
+        String returnValue = null;
+        Jedis jedis = null;
+        try {
+            jedis = getJedis(dbNum);
+            returnValue = jedis.get(key);
+        } catch (Exception e) {
+            log.error("JedisUtil get方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return returnValue;
+    }
+
+    /**
+     * 向redis 库中存入值 set
+     *
+     * @param key
+     * @param value
+     */
+    public String set(int dbNum, String key, String value) {
+        Jedis jedis = null;
+        String result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.set(key, value);
+        } catch (Exception e) {
+            log.error("JedisUtil set方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 向redis库中存入值 set
+     *
+     * @param key
+     * @param value
+     * @param expireTime
+     */
+    public String set(int dbNum, String key, String value, Integer expireTime) {
+        Jedis jedis = null;
+        String result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.set(key, value);
+            jedis.expire(key, expireTime);
+        } catch (Exception e) {
+            log.error("JedisUtil set方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 删除 redis 库中的值
+     *
+     * @param key
+     */
+    public Long del(int dbNum, String key) {
+        Jedis jedis = null;
+        Long result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.del(key);
+        } catch (Exception e) {
+            log.error("JedisUtil del方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 获取 redis 库中的值
+     *
+     * @param key
+     * @param field
+     */
+    public String hget(int dbNum, String key, String field) {
+        Jedis jedis = null;
+        String result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hget(key, field);
+        } catch (Exception e) {
+            log.error("JedisUtil hget方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 向redis库中存入值 hset
+     *
+     * @param key
+     * @param field
+     * @param value
+     */
+    public Long hset(int dbNum, String key, String field, String value) {
+        Jedis jedis = null;
+        Long result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hset(key, field, value);
+        } catch (Exception e) {
+            log.error("JedisUtil hset方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 向redis库中存入值 hset
+     *
+     * @param key
+     * @param field
+     * @param value
+     */
+    public Long hset(int dbNum, String key, String field, String value, Integer expireTime) {
+        Jedis jedis = null;
+        Long result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hset(key, field, value);
+            jedis.expire(key, expireTime);
+        } catch (Exception e) {
+            log.error("JedisUtil hset方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+
+    /**
+     * 删除 redis 库中的值
+     *
+     * @param key
+     */
+    public Long hdel(int dbNum, String key, String field) {
+        Jedis jedis = null;
+        Long result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hdel(key, field);
+        } catch (Exception e) {
+            log.error("JedisUtil hdel方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+
+    /**
+     * 减少
+     *
+     * @param key
+     * @param value
+     */
+    public Long decrBy(int dbNum, String key, Integer value) {
+        Jedis jedis = null;
+        Long result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.decrBy(key, value);
+        } catch (Exception e) {
+            log.error("JedisUtil decrBy方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 增加
+     *
+     * @param key
+     * @param value
+     */
+    public Long incrBy(int dbNum, String key, Integer value) {
+        Jedis jedis = null;
+        Long result = null;
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.incrBy(key, value);
+        } catch (Exception e) {
+            log.error("JedisUtil hincrBy方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * hgetAll方法
+     *
+     * @param dbNum
+     * @param key
+     * @return
+     */
+    public Map<String, String> hgetAll(int dbNum, String key) {
+        Jedis jedis = null;
+        Map<String, String> result = new HashMap<>();
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hgetAll(key);
+        } catch (Exception e) {
+            log.error("JedisUtil hgetAll方法异常" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * @Author: houjw
+     * @Description:hmset
+     * @Date: 9:55 2017/11/28
+     */
+    public String hmset(int dbNum, String key, Map<String, String> hash) {
+        Jedis jedis = null;
+        String result = "";
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hmset(key, hash);
+        } catch (Exception e) {
+            log.error("JedisUtil hmset" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * 默认超时时间
+     */
+    private static final Integer DEFAULT_EXPIRE_TIME = 10000;
+    private static final String REDIS_LOCK = "lock:";
+
+    /**
+     * 分布式事务锁
+     *
+     * @param key      要锁定的key
+     * @param lockTime 最大锁定时间 必须输入
+     * @return
+     */
+    public boolean getLock(String key, Integer lockTime) {
+        key = REDIS_LOCK + key;
+        boolean lockStatus = false;
+        Jedis jedis = null;
+        try {
+            if (lockTime == null || lockTime == 0) {
+                lockTime = DEFAULT_EXPIRE_TIME;
+            }
+            jedis = getJedis(dbNum);
+            Long i = jedis.setnx(key, "true");
+            if (i.intValue() == 1) {
+                lockStatus = true;
+                jedis.expire(key, lockTime);
+                log.info("get lock, key: " + key + " , expire in " + lockTime + " ms.");
+            }
+        } catch (Exception e) {
+            log.error("获取分布式锁失败，key：" + key + "异常消息：" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return lockStatus;
+    }
+
+    /**
+     * 释放锁
+     *
+     * @param key 要解锁的key
+     * @return
+     */
+    public boolean releaseLock(String key) {
+        key = REDIS_LOCK + key;
+        boolean releaseStatus = false;
+        Jedis jedis = null;
+        try {
+            jedis = getJedis(dbNum);
+            jedis.del(key);
+            releaseStatus = true;
+        } catch (Exception e) {
+            log.error("释放分布式锁失败，key：" + key + "异常消息：" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return releaseStatus;
+    }
+
+    /**
+     * @Author: houjw
+     * @Description:hmset
+     * @Date: 9:55 2017/11/28
+     */
+    public String hmset(int dbNum, String key, Map<String, String> hash, Integer expireTime) {
+        Jedis jedis = null;
+        String result = "";
+        try {
+            jedis = getJedis(dbNum);
+            result = jedis.hmset(key, hash);
+            jedis.expire(key, expireTime);
+        } catch (Exception e) {
+            log.error("JedisUtil hmset" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+
+    /**
+     * @Author: sunrm
+     * @Description:hmget
+     * @Date: 9:55 2017/11/28
+     */
+    public Map<String, String> hmget(int dbNum, String key, String... fields) {
+        Jedis jedis = null;
+        Map<String, String> result = Maps.newHashMap();
+        try {
+            jedis = getJedis(dbNum);
+            List<String> list = jedis.hmget(key, fields);
+            for (int i = 0; i < fields.length; i++) {
+                result.put(fields[i], list.get(i));
+            }
+        } catch (Exception e) {
+            log.error("JedisUtil hmget" + e.getMessage(), e);
+        } finally {
+            destroy(jedis);
+        }
+        return result;
+    }
+}

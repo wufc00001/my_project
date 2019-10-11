@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.BusiDictionariesPriceTypeMapper" >
+  <resultMap id="BaseResultMap" type="com.chngc.collect.entity.BusiDictionariesPriceType" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="dictionaries_value" property="dictionariesValue" jdbcType="VARCHAR" />
+    <result column="edit_time" property="editTime" jdbcType="TIMESTAMP" />
+    <result column="edit_user" property="editUser" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <insert id="save" parameterType="com.chngc.collect.entity.BusiDictionariesPriceType">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into busi_dictionaries_price_type (id, dictionaries_value, edit_time,
+      edit_user)
+    values (#{id,jdbcType=BIGINT}, #{dictionariesValue,jdbcType=VARCHAR}, #{editTime,jdbcType=TIMESTAMP},
+      #{editUser,jdbcType=VARCHAR})
+  </insert>
+
+  <update id="saveUpdate" parameterType="com.chngc.collect.entity.BusiDictionariesPriceType">
+    update busi_dictionaries_price_type
+    <set>
+      <if test="dictionariesValue != null">
+        dictionaries_value = #{dictionariesValue,jdbcType=VARCHAR},
+      </if>
+      <if test="editTime != null">
+        edit_time = #{editTime},
+      </if>
+      <if test="editUser != null">
+        edit_user = #{editUser,jdbcType=VARCHAR}
+      </if>
+    </set>
+      where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="getList" resultMap="BaseResultMap" >
+    select id, dictionaries_value, edit_time, edit_user
+    from busi_dictionaries_price_type order by id desc
+  </select>
+</mapper>

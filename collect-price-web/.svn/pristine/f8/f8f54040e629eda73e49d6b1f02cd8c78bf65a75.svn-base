@@ -1,0 +1,8 @@
+package com.chngc.collect.common;
+
+import com.chngc.core.util.EncryptUtil;
+
+public final class Constants {
+    public static final String SUCCESS_CODE = "00";
+    public static final String NOLOGIN_CODE = "99";
+}

@@ -1,0 +1,81 @@
+package com.chngc.collect.entity;
+
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class BusiDictionariesProject implements Serializable {
+
+  private Long id;
+  private String projectName;
+  private String abbreviationName;
+  private Long issueYear;
+  private Date announcementDay;
+  private Date issuanceDay;
+  private Date editTime;
+  private String editUser;
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public String getProjectName() {
+    return projectName;
+  }
+
+  public void setProjectName(String projectName) {
+    this.projectName = projectName;
+  }
+
+  public String getAbbreviationName() {
+    return abbreviationName;
+  }
+
+  public void setAbbreviationName(String abbreviationName) {
+    this.abbreviationName = abbreviationName;
+  }
+
+  public Long getIssueYear() {
+    return issueYear;
+  }
+
+  public void setIssueYear(Long issueYear) {
+    this.issueYear = issueYear;
+  }
+
+  public Date getAnnouncementDay() {
+    return announcementDay;
+  }
+
+  public void setAnnouncementDay(Date announcementDay) {
+    this.announcementDay = announcementDay;
+  }
+
+  public Date getIssuanceDay() {
+    return issuanceDay;
+  }
+
+  public void setIssuanceDay(Date issuanceDay) {
+    this.issuanceDay = issuanceDay;
+  }
+
+  public Date getEditTime() {
+    return editTime;
+  }
+
+  public void setEditTime(Date editTime) {
+    this.editTime = editTime;
+  }
+
+  public String getEditUser() {
+    return editUser;
+  }
+
+  public void setEditUser(String editUser) {
+    this.editUser = editUser;
+  }
+}

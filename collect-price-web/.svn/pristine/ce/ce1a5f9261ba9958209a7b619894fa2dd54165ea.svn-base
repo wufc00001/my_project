@@ -1,0 +1,47 @@
+package com.chngc.collect.service;
+
+import com.chngc.collect.dao.BusiDictionariesProjectMapper;
+import com.chngc.collect.entity.BusiDictionariesProject;
+import com.chngc.collect.form.BusiProjectForm;
+import com.chngc.collect.util.ConverterUtils;
+import com.chngc.collect.util.Dictionaries;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+
+/**
+ * Created by wufc on 2019/8/23.
+ */
+@Slf4j
+@Service
+public class BusiDictionariesProjectService {
+
+    @Autowired
+    private BusiDictionariesProjectMapper busiDictionariesProjectMapper;
+
+    /**
+     * 新增  字典-纪念币项目
+     * @param request
+     * @param form
+     */
+    public void save(HttpServletRequest request, BusiProjectForm form) {
+        String userId = (String) request.getSession().getAttribute("userId");
+        BusiDictionariesProject project = new BusiDictionariesProject();
+        ConverterUtils.converterFormToBusiProject(form,project,userId);
+        Long projectId = busiDictionariesProjectMapper.save(project);
+        Dictionaries.dictionaries_project.add(project);
+    }
+
+    public List<BusiDictionariesProject> list() {
+        List<BusiDictionariesProject> projects= busiDictionariesProjectMapper.list();
+        return projects;
+    }
+
+    public void saveUpdate(BusiDictionariesProject project) {
+        busiDictionariesProjectMapper.saveUpdate(project);
+        Dictionaries.dictionaries_project.add(project);
+    }
+}

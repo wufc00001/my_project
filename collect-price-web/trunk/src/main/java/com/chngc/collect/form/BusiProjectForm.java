@@ -1,0 +1,20 @@
+package com.chngc.collect.form;
+
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
+
+@Data
+public class BusiProjectForm implements Serializable {
+    private String id;
+    // 项目名称
+    private String projectName;
+    // 项目简称
+    private String abbreviationName;
+    // 公告日
+    private String announcementDay;
+    // 发行日
+    private String issuanceDay;
+    
+}

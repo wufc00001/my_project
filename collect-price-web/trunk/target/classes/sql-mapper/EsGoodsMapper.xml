@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.EsGoodsMapper" >
+  <resultMap id="BaseResultMap" type="com.chngc.collect.entity.GoodsInfo" >
+    <result column="GOODS_ID" property="goodsId" jdbcType="BIGINT" />
+    <result column="GOODS_NO" property="goodsNo" jdbcType="BIGINT" />
+    <result column="storehouse_code" property="storehouseCode" jdbcType="VARCHAR" />
+    <result column="ADD_TIME" property="addTime" jdbcType="VARCHAR" />
+  </resultMap>
+  <select id="findAliveGoodsInfo" resultMap="BaseResultMap">
+    select t.GOODS_ID,t.GOODS_NO,t.storehouse_code,t.ADD_TIME
+    from es_goods t where t.ALIVE=1
+  </select>
+</mapper>

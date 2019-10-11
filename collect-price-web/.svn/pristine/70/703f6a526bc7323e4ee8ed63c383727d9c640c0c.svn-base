@@ -1,0 +1,17 @@
+package com.chngc.collect.util;
+
+import com.chngc.collect.entity.CoreUser;
+import com.chngc.collect.vo.CoreUserVo;
+
+import java.util.List;
+
+public class ConverterUtils {
+
+    public static void converterUserVo(CoreUser user,CoreUserVo userVo){
+        userVo.setLoginName(user.getLoginName());
+        userVo.setMobile(user.getMobile());
+        userVo.setRealName(user.getRealName());
+        userVo.setUserId(user.getUserId());
+        userVo.setUserStatus(user.getUserStatus());
+    }
+}

@@ -1,0 +1,11 @@
+package com.chngc.collect.dao;
+
+import com.chngc.core.annotation.SqlMapper;
+
+/**
+ * Created by Administrator on 2019/8/22.
+ */
+@SqlMapper
+public interface CoreComponentMapper {
+
+}

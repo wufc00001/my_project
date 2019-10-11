@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.chngc.collect.dao.BusiGoodsMapper">
+    <resultMap id="BaseResultMap" type="com.chngc.collect.entity.BusiGoods">
+        <result property="id" column="id"/>
+        <result property="projectId" column="project_id"/>
+        <result property="goodsName" column="goods_name"/>
+        <result property="goodsType" column="goods_type"/>
+        <result property="goodsYear" column="goods_year"/>
+        <result property="goodsMaterial" column="goods_material"/>
+        <result property="goodsWeight" column="goods_weight"/>
+        <result property="goodsWeightUnit" column="goods_weight_unit"/>
+        <result property="goodsShape" column="goods_shape"/>
+        <result property="goodsDenomination" column="goods_denomination"/>
+        <result property="maxCirculation" column="max_circulation"/>
+        <result property="actualCastingQuantity" column="actual_casting_quantity"/>
+        <result property="imgUrl" column="img_url"/>
+        <result property="createTime" column="create_time"/>
+        <result property="createUser" column="create_user"/>
+        <result property="editTime" column="edit_time"/>
+        <result property="editUser" column="edit_user"/>
+    </resultMap>
+
+    <select id="list"  parameterType="java.util.Map" resultType="java.util.Map">
+       select * from( select bg.*, bgp.goods_price from busi_goods bg LEFT JOIN busi_goods_price bgp ON bg.id = bgp.goods_id
+        where 1=1
+        <if test="null != projectNameList and projectNameList.size > 0">
+            and bg.project_id in
+            <foreach item="projectId" index="index" collection="projectNameList" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+        </if>
+        <if test="goodsName != null and goodsName!=''">
+            and bg.goods_name like '%${goodsName}%'
+        </if>
+        <if test="goodsYear != null and goodsYear!=''">
+            and bg.goods_year = #{goodsYear}
+        </if>
+        <if test="goodsMaterial != null and goodsMaterial!=''">
+            and bg.goods_material = #{goodsMaterial}
+        </if>
+        <if test="goodsShape != null and goodsShape!=''">
+            and bg.goods_shape = #{goodsShape}
+        </if>
+
+        ORDER BY
+        bgp.business_time DESC
+        LIMIT 10000000000000
+
+        )a GROUP BY a.id
+        order by a.goods_year desc,a.id asc
+        limit #{limit,jdbcType=INTEGER},#{pageSize,jdbcType=INTEGER}
+    </select>
+
+    <select id="listCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+        select count(1) from busi_goods
+        where 1=1
+        <if test="null != projectNameList and projectNameList.size > 0">
+            and project_id in
+            <foreach item="projectId" index="index" collection="projectNameList" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+        </if>
+        <if test="goodsName != null and goodsName!=''">
+            and goods_name like '%${goodsName}%'
+        </if>
+        <if test="goodsYear != null and goodsYear!=''">
+            and goods_year = #{goodsYear}
+        </if>
+        <if test="goodsMaterial != null and goodsMaterial!=''">
+            and goods_material = #{goodsMaterial}
+        </if>
+        <if test="goodsShape != null and goodsShape!=''">
+            and goods_shape = #{goodsShape}
+        </if>
+    </select>
+
+    <insert id="save"  parameterType="com.chngc.collect.entity.BusiGoods" >
+      insert into busi_goods
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+         <if test="projectId != null" >
+             project_id,
+         </if>
+        <if test="goodsName != null" >
+            goods_name,
+        </if>
+        <if test="goodsType != null" >
+            goods_type,
+        </if>
+        <if test="goodsYear != null" >
+            goods_year,
+        </if>
+        <if test="goodsMaterial != null" >
+            goods_material,
+        </if>
+        <if test="goodsWeight != null" >
+            goods_weight,
+        </if>
+        <if test="goodsWeightUnit != null" >
+            goods_weight_unit,
+        </if>
+        <if test="goodsShape != null" >
+            goods_shape,
+        </if>
+        <if test="goodsDenomination != null" >
+            goods_denomination,
+        </if>
+        <if test="maxCirculation != null" >
+            max_circulation,
+        </if>
+        <if test="actualCastingQuantity != null" >
+            actual_casting_quantity,
+        </if>
+        <if test="imgUrl != null" >
+            img_url,
+        </if>
+            create_time,
+            create_user,
+    </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="projectId != null" >
+                #{projectId},
+            </if>
+        <if test="goodsName != null" >
+            #{goodsName},
+        </if>
+        <if test="goodsType != null" >
+            #{goodsType},
+        </if>
+        <if test="goodsYear != null" >
+            #{goodsYear},
+        </if>
+        <if test="goodsMaterial != null" >
+            #{goodsMaterial},
+        </if>
+        <if test="goodsWeight != null" >
+            #{goodsWeight},
+        </if>
+        <if test="goodsWeightUnit != null" >
+            #{goodsWeightUnit},
+        </if>
+        <if test="goodsShape != null" >
+            #{goodsShape},
+        </if>
+        <if test="goodsDenomination != null" >
+            #{goodsDenomination},
+        </if>
+        <if test="maxCirculation != null" >
+            #{maxCirculation},
+        </if>
+        <if test="actualCastingQuantity != null" >
+            #{actualCastingQuantity},
+        </if>
+        <if test="imgUrl != null" >
+            #{imgUrl},
+        </if>
+            now(),
+            #{createUser},
+        </trim>
+  </insert>
+
+    <select id="findById"  parameterType="java.lang.String" resultType="java.util.Map">
+        select * from busi_goods where id=#{id}
+    </select>
+
+    <update id="saveUpdate" parameterType="com.chngc.collect.entity.BusiGoods">
+        update busi_goods
+        <set >
+            <if test="goodsName != null" >
+                goods_name=#{goodsName},
+            </if>
+            <if test="projectId != null" >
+                project_id=#{projectId},
+            </if>
+            <if test="goodsType != null" >
+                goods_type=#{goodsType},
+            </if>
+            <if test="goodsYear != null" >
+                goods_year=#{goodsYear},
+            </if>
+            <if test="goodsMaterial != null" >
+                goods_material=#{goodsMaterial},
+            </if>
+            <if test="goodsWeight != null" >
+                goods_weight=#{goodsWeight},
+            </if>
+            <if test="goodsWeightUnit != null" >
+                goods_weight_unit=#{goodsWeightUnit},
+            </if>
+            <if test="goodsShape != null" >
+                goods_shape=#{goodsShape},
+            </if>
+            <if test="goodsDenomination != null" >
+                goods_denomination=#{goodsDenomination},
+            </if>
+            <if test="maxCirculation != null" >
+                max_circulation=#{maxCirculation},
+            </if>
+            <if test="actualCastingQuantity != null" >
+                actual_casting_quantity=#{actualCastingQuantity},
+            </if>
+            <if test="imgUrl != null" >
+                img_url=#{imgUrl},
+            </if>
+                edit_time=now(),
+                edit_user=#{editUser},
+        </set>
+        where id=#{id}
+    </update>
+</mapper>

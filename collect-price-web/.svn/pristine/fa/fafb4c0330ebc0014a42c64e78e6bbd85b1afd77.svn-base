@@ -1,0 +1,118 @@
+package com.chngc.collect.service;
+
+import com.chngc.collect.dao.EsGoodsMapper;
+import com.chngc.collect.entity.GoodsInfo;
+import com.chngc.collect.util.RedisDbNum;
+import com.chngc.core.util.DateUtils;
+import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import javax.annotation.Resource;
+import java.util.*;
+
+@Slf4j
+@Service
+public class EsGoodsService {
+    private static Map<String, String> goodsStorageMap = null;
+    private static List<GoodsInfo> goodsInfoList = null;
+    private static boolean lock = false;
+    @Resource
+    private EsGoodsMapper esGoodsMapper;
+    @Resource
+    private JedisPool jedisPool;
+
+    /**
+     * 定时加载上架商品
+     */
+    @Scheduled(fixedRate = 10 * 1000)
+    public void loadAliveGoodsInfo() {
+        log.info("定时同步上架商品");
+        goodsInfoList = esGoodsMapper.findAliveGoodsInfo();
+    }
+
+    /**
+     * 定时加载商品库存
+     */
+    @Scheduled(fixedRate = 5 * 1000)
+    public void loadGoodsStorageInfo() {
+        if (lock) {
+            return;
+        }
+        log.info("定时同步商品库存");
+        if (goodsInfoList != null) {
+            lock = true;
+            Map<String, String> goodsStorageMapTemp = Maps.newHashMap();
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.select(RedisDbNum.STORAGE_INFO);
+                goodsInfoList.forEach(goodsInfo -> {
+                    String aviQty = jedis.get(getAviQtyKey(goodsInfo.getGoodsNo(), goodsInfo.getStorehouseCode()));
+//                    log.info("==loadGoodsStorageInfo=="+goodsInfo.getGoodsNo() + "_" + goodsInfo.getStorehouseCode()
+//                            +"===="+aviQty);
+                    if (aviQty != null) {
+                        goodsStorageMapTemp.put(goodsInfo.getGoodsNo() + "_" + goodsInfo.getStorehouseCode(), aviQty);
+                    }
+                    if (StringUtils.isNotBlank(goodsInfo.getAddTime())) {//开始销售时间
+                        goodsStorageMapTemp.put(goodsInfo.getGoodsNo() + "_SALE_TIME", goodsInfo.getAddTime());
+                    }
+                });
+                goodsStorageMap = goodsStorageMapTemp;
+                lock = false;
+            } catch (Exception e) {
+                lock = false;
+                goodsStorageMap = null;
+                log.error(e.getMessage(), e);
+            }
+        } else {
+            goodsStorageMap = null;
+        }
+    }
+
+    /**
+     * 获取可销售量key
+     */
+    private static String getAviQtyKey(Long goodsNo, String storehouseCode) {
+        return "storage_" + goodsNo + "_" + storehouseCode + "_aviQty";
+    }
+
+    /**
+     * 获取库存状态
+     */
+    public Map<String, String> getGoodsStorageStatusInfo(String goodsInfoStr) {
+        Map<String, String> goodsInfoMap = Maps.newHashMap();
+        if (goodsStorageMap == null) {
+            return goodsInfoMap;
+        }
+        if (goodsInfoStr != null && goodsInfoStr.length() > 0) {
+            String[] goodsInfoAttr = goodsInfoStr.split(",");
+            for (String str : goodsInfoAttr) {
+                String count = goodsStorageMap.get(str)!=null ? goodsStorageMap.get(str) : "0";
+//                log.info("==getGoodsStorageStatusInfo=="+str+"====="+goodsStorageMap.get(str)+"===="+count);
+                Integer aviQty = Integer.valueOf(count);
+                if (aviQty == null || aviQty <= 0) {
+                    goodsInfoMap.put(str, "2");
+                } else if (aviQty <= 10) {
+                    goodsInfoMap.put(str, "3");
+                }
+
+                // 定时抢购开售时间判断---2019年7月16日 13:38:18
+                // 即将开抢显示：-3小时≤当前时间-开售时间<0 ，不考虑库存。
+                String[] goodsNo = str.split("_");
+                String saleTime = goodsStorageMap.get(goodsNo[0] + "_SALE_TIME");//开售时间
+                Date saleDate = DateUtils.str2Date(saleTime,"yyyy-MM-dd HH:mm:ss");
+                if(saleDate != null){
+                    Date nowDate = new Date();//当前时间
+                    long diff = nowDate.getTime() - saleDate.getTime();
+//                    long hours = diff / (1000 * 60 * 60);//小时
+                    if(diff < 0){
+                        goodsInfoMap.put(str, saleDate.getTime()+"");//覆盖前面库存的状态，显示即将开抢
+                    }
+                }
+            }
+        }
+        return goodsInfoMap;
+    }
+}

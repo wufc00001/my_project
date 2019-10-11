@@ -1,0 +1,33 @@
+package com.chngc.collect.controller;
+
+import com.chngc.collect.common.BaseController;
+import com.chngc.collect.common.Constants;
+import com.chngc.collect.service.EsGoodsService;
+import com.chngc.core.common.ResponseResult;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import java.util.Date;
+import java.util.Map;
+
+@Slf4j
+@RequestMapping("cache")
+@RestController
+public class StorageController extends BaseController {
+    @Autowired
+    private EsGoodsService esGoodsService;
+
+    /**
+     * 校验库存
+     * @param goodsInfoStr
+     * @return 2无货 3库存紧张
+     */
+    @PostMapping(value = "/verifyStorage")
+    public Mono<ResponseResult> login(@RequestBody String goodsInfoStr) {
+        goodsInfoStr = htmlEscape(goodsInfoStr);
+        Map<String, String> goodsInfoList = esGoodsService.getGoodsStorageStatusInfo(goodsInfoStr);
+        return Mono.justOrEmpty(buildResult(Constants.SUCCESS_CODE,new Date().getTime()+"",goodsInfoList));
+    }
+}

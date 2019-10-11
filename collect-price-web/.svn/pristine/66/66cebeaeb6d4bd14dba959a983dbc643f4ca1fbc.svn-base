@@ -1,0 +1,44 @@
+package com.chngc.collect.util;
+
+import com.chngc.collect.entity.BusiDictionariesProject;
+import com.chngc.collect.entity.CoreUser;
+import com.chngc.collect.form.BusiProjectForm;
+import com.chngc.collect.vo.CoreUserVo;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class ConverterUtils {
+
+    public static void converterUserVo(CoreUser user,CoreUserVo userVo){
+        userVo.setLoginName(user.getLoginName());
+        userVo.setMobile(user.getMobile());
+        userVo.setRealName(user.getRealName());
+        userVo.setUserId(user.getUserId());
+        userVo.setUserStatus(user.getUserStatus());
+        if(user.getRoleIds()!=null){
+            String[] roleIds = user.getRoleIds().split(",");
+            userVo.setRoleIds(roleIds);
+        }
+    }
+
+    public static void converterFormToBusiProject(BusiProjectForm form, BusiDictionariesProject project, String userId) {
+        project.setProjectName(form.getProjectName());
+        project.setAbbreviationName(form.getAbbreviationName());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+        try {
+            Date announcementDay = sdf.parse(form.getAnnouncementDay());
+            Date issuanceDay = sdf.parse(form.getIssuanceDay());
+            SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy");
+            String issueYear = sdf2.format(form.getIssuanceDay());
+            project.setAnnouncementDay(announcementDay);
+            project.setIssuanceDay(issuanceDay);
+            project.setIssueYear(Long.valueOf(issueYear));
+            project.setEditTime(new Date());
+            project.setEditUser(userId);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+}

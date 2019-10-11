@@ -1,0 +1,46 @@
+package com.chngc.collect.service;
+
+import com.chngc.collect.dao.BusiGoodsPriceMapper;
+import com.chngc.collect.entity.BusiGoodsPrice;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Service
+public class BusiGoodsPriceService {
+    @Resource
+    private BusiGoodsPriceMapper busiGoodsPriceMapper;
+
+
+    /**
+     * list
+     */
+    public List<BusiGoodsPrice> list(Map map) {
+        return busiGoodsPriceMapper.list(map);
+    }
+
+    public int listCount(Map map) {
+        return busiGoodsPriceMapper.listCount(map);
+    }
+
+    public int save(BusiGoodsPrice busiGoodsPrice) {
+        return busiGoodsPriceMapper.save(busiGoodsPrice);
+    }
+
+    public int saveUpdate(BusiGoodsPrice busiGoodsPrice) {
+        return busiGoodsPriceMapper.saveUpdate(busiGoodsPrice);
+    }
+
+    public BusiGoodsPrice findById(String id) {
+        List<BusiGoodsPrice> list = busiGoodsPriceMapper.findById(id);
+        if(list!=null&&list.size()>0){
+            return list.get(0);
+        }
+        return null;
+    }
+
+}

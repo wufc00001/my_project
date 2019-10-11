@@ -1,0 +1,46 @@
+package com.chngc.collect.service;
+
+import com.chngc.collect.dao.BusiGoodsMapper;
+import com.chngc.collect.entity.BusiGoods;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Service
+public class BusiGoodsService {
+    @Resource
+    private BusiGoodsMapper busiGoodsMapper;
+
+
+    /**
+     * list
+     */
+    public List<BusiGoods> list(Map map) {
+        return busiGoodsMapper.list(map);
+    }
+
+    public int listCount(Map map) {
+        return busiGoodsMapper.listCount(map);
+    }
+
+    public int save(BusiGoods busiGoods) {
+        return busiGoodsMapper.save(busiGoods);
+    }
+
+    public int saveUpdate(BusiGoods busiGoods) {
+        return busiGoodsMapper.saveUpdate(busiGoods);
+    }
+
+    public BusiGoods findById(String id) {
+        List<BusiGoods> list = busiGoodsMapper.findById(id);
+        if(list!=null&&list.size()>0){
+            return list.get(0);
+        }
+        return null;
+    }
+
+}
